@@ -1,0 +1,5 @@
+package minimax
+
+func Minimax() {
+
+}
