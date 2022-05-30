@@ -3,14 +3,15 @@ package common
 type Faction string
 
 const (
-	DC Faction = "DC"
-	GC         = "GC"
-	KH         = "KH"
-	KI         = "KI"
-	NG         = "NG"
-	OK         = "OK"
-	SL         = "SL"
-	TZ         = "TZ"
+	DC    Faction = "DC"
+	GC            = "GC"
+	KH            = "KH"
+	KI            = "KI"
+	NG            = "NG"
+	OK            = "OK"
+	SL            = "SL"
+	TZ            = "TZ"
+	EMPTY         = ""
 )
 
 type Matchup struct {

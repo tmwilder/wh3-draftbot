@@ -29,6 +29,10 @@ type resultAndOdds struct {
 	odds   float64
 }
 
+func getSuccessors(state gameState) []gameState {
+	return []gameState{}
+}
+
 /**
 For one specific gamestate consisting of a full set of games, compute the odds of player one winning.
 */
