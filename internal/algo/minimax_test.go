@@ -12,8 +12,8 @@ func TestMinimax(t *testing.T) {
 	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
-			{initialPicks: []Faction{KH, KI}, matchup: Matchup{P1Pick: KI, P2Pick: KI}},
-			{initialPicks: []Faction{KH, TZ}, matchup: Matchup{P1Pick: TZ, P2Pick: TZ}},
+			{picks: []Faction{KH, KI}, matchup: Matchup{P1: KI, P2: KI}},
+			{picks: []Faction{KH, TZ}, matchup: Matchup{P1: TZ, P2: TZ}},
 		},
 		p3Round: p3Round{},
 	}

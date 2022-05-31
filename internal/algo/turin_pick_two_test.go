@@ -14,8 +14,8 @@ func TestGetSuccessorsP3(t *testing.T) {
 	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
-			{initialPicks: []Faction{KH, KI}, matchup: Matchup{P1Pick: KI, P2Pick: KI}},
-			{initialPicks: []Faction{KH, TZ}, matchup: Matchup{P1Pick: TZ, P2Pick: TZ}},
+			{picks: []Faction{KH, KI}, matchup: Matchup{P1: KI, P2: KI}},
+			{picks: []Faction{KH, TZ}, matchup: Matchup{P1: TZ, P2: TZ}},
 		},
 		p3Round: p3Round{},
 	}
@@ -49,10 +49,10 @@ func TestGetSuccessorsP2Pregame(t *testing.T) {
 		roundNumber: 1,
 		p2rounds:    []p2Round{},
 		p3Round: p3Round{
-			initialPicks: []Faction{},
-			ban:          EMPTY,
-			counterBan:   EMPTY,
-			matchup:      Matchup{P1Pick: EMPTY, P2Pick: EMPTY},
+			picks:      []Faction{},
+			ban:        EMPTY,
+			counterBan: EMPTY,
+			matchup:    Matchup{P1: EMPTY, P2: EMPTY},
 		},
 	}
 	gameStates := getSuccessors(tournamentInfo, gameState)
@@ -81,10 +81,10 @@ func TestPick3Combo5thPick(t *testing.T) {
 	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
-			{initialPicks: []Faction{KH, KI}, matchup: Matchup{P1Pick: KI, P2Pick: KI}},
-			{initialPicks: []Faction{KH, TZ}, matchup: Matchup{P1Pick: TZ, P2Pick: TZ}},
-			{initialPicks: []Faction{KH, NG}, matchup: Matchup{P1Pick: NG, P2Pick: NG}},
-			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: SL, P2Pick: SL}}},
+			{picks: []Faction{KH, KI}, matchup: Matchup{P1: KI, P2: KI}},
+			{picks: []Faction{KH, TZ}, matchup: Matchup{P1: TZ, P2: TZ}},
+			{picks: []Faction{KH, NG}, matchup: Matchup{P1: NG, P2: NG}},
+			{picks: []Faction{KH, SL}, matchup: Matchup{P1: SL, P2: SL}}},
 		p3Round: p3Round{},
 	}
 
@@ -106,8 +106,8 @@ func TestPick3Combo3rdPick(t *testing.T) {
 	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
-			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
-			{initialPicks: []Faction{KH, TZ}, matchup: Matchup{P1Pick: OK, P2Pick: TZ}}},
+			{picks: []Faction{KH, SL}, matchup: Matchup{P1: KH, P2: SL}},
+			{picks: []Faction{KH, TZ}, matchup: Matchup{P1: OK, P2: TZ}}},
 		p3Round: p3Round{},
 	}
 
@@ -150,8 +150,8 @@ func TestPick2Combo3rdPick(t *testing.T) {
 	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
-			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
-			{initialPicks: []Faction{KH, TZ}, matchup: Matchup{P1Pick: OK, P2Pick: TZ}}},
+			{picks: []Faction{KH, SL}, matchup: Matchup{P1: KH, P2: SL}},
+			{picks: []Faction{KH, TZ}, matchup: Matchup{P1: OK, P2: TZ}}},
 		p3Round: p3Round{},
 	}
 
@@ -173,9 +173,9 @@ func TestPick2Combo4thPick(t *testing.T) {
 	gameState := GameState{
 		roundNumber: 5,
 		p2rounds: []p2Round{
-			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
-			{initialPicks: []Faction{TZ, OK}, matchup: Matchup{P1Pick: OK, P2Pick: TZ}},
-			{initialPicks: []Faction{NG, GC}, matchup: Matchup{P1Pick: NG, P2Pick: NG}}},
+			{picks: []Faction{KH, SL}, matchup: Matchup{P1: KH, P2: SL}},
+			{picks: []Faction{TZ, OK}, matchup: Matchup{P1: OK, P2: TZ}},
+			{picks: []Faction{NG, GC}, matchup: Matchup{P1: NG, P2: NG}}},
 		p3Round: p3Round{},
 	}
 
@@ -196,18 +196,18 @@ func TestPick2Combo4thPick(t *testing.T) {
 func TestComputeWinRateSimple(t *testing.T) {
 	tournamentInfo := TournamentInfo{
 		RoundCount:  3,
-		MatchupOdds: map[Matchup]float64{Matchup{P1Pick: KH, P2Pick: SL}: .5}}
+		MatchupOdds: map[Matchup]float64{Matchup{P1: KH, P2: SL}: .5}}
 
 	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
-			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
-			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}}},
+			{picks: []Faction{KH, SL}, matchup: Matchup{P1: KH, P2: SL}},
+			{picks: []Faction{KH, SL}, matchup: Matchup{P1: KH, P2: SL}}},
 		p3Round: p3Round{
-			initialPicks: []Faction{NG, SL, KH},
-			ban:          OK,
-			counterBan:   OK,
-			matchup:      Matchup{P1Pick: KH, P2Pick: SL}},
+			picks:      []Faction{NG, SL, KH},
+			ban:        OK,
+			counterBan: OK,
+			matchup:    Matchup{P1: KH, P2: SL}},
 	}
 
 	winRate := computeWinRate(tournamentInfo, gameState)
@@ -221,18 +221,18 @@ func TestComputeWinRateSimple(t *testing.T) {
 func TestComputeWinRateSimple2(t *testing.T) {
 	tournamentInfo := TournamentInfo{
 		RoundCount:  3,
-		MatchupOdds: map[Matchup]float64{Matchup{P1Pick: KH, P2Pick: SL}: 1.0}}
+		MatchupOdds: map[Matchup]float64{Matchup{P1: KH, P2: SL}: 1.0}}
 
 	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
-			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
-			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}}},
+			{picks: []Faction{KH, SL}, matchup: Matchup{P1: KH, P2: SL}},
+			{picks: []Faction{KH, SL}, matchup: Matchup{P1: KH, P2: SL}}},
 		p3Round: p3Round{
-			initialPicks: []Faction{NG, SL, KH},
-			ban:          OK,
-			counterBan:   OK,
-			matchup:      Matchup{P1Pick: KH, P2Pick: SL}},
+			picks:      []Faction{NG, SL, KH},
+			ban:        OK,
+			counterBan: OK,
+			matchup:    Matchup{P1: KH, P2: SL}},
 	}
 
 	winRate := computeWinRate(tournamentInfo, gameState)
@@ -247,20 +247,20 @@ func TestComputeWinRateLessSimple(t *testing.T) {
 	tournamentInfo := TournamentInfo{
 		RoundCount: 3,
 		MatchupOdds: map[Matchup]float64{
-			Matchup{P1Pick: KH, P2Pick: SL}: .6,
-			Matchup{P1Pick: SL, P2Pick: KH}: .4,
-			Matchup{P1Pick: OK, P2Pick: SL}: .5}}
+			Matchup{P1: KH, P2: SL}: .6,
+			Matchup{P1: SL, P2: KH}: .4,
+			Matchup{P1: OK, P2: SL}: .5}}
 
 	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
-			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
-			{initialPicks: []Faction{SL, KH}, matchup: Matchup{P1Pick: SL, P2Pick: KH}}},
+			{picks: []Faction{KH, SL}, matchup: Matchup{P1: KH, P2: SL}},
+			{picks: []Faction{SL, KH}, matchup: Matchup{P1: SL, P2: KH}}},
 		p3Round: p3Round{
-			initialPicks: []Faction{NG, SL, KH},
-			ban:          OK,
-			counterBan:   OK,
-			matchup:      Matchup{P1Pick: OK, P2Pick: SL}},
+			picks:      []Faction{NG, SL, KH},
+			ban:        OK,
+			counterBan: OK,
+			matchup:    Matchup{P1: OK, P2: SL}},
 	}
 
 	winRate := computeWinRate(tournamentInfo, gameState)
@@ -275,26 +275,26 @@ func TestDeepCopy(t *testing.T) {
 	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
-			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
-			{initialPicks: []Faction{SL, KH}, matchup: Matchup{P1Pick: SL, P2Pick: KH}}},
+			{picks: []Faction{KH, SL}, matchup: Matchup{P1: KH, P2: SL}},
+			{picks: []Faction{SL, KH}, matchup: Matchup{P1: SL, P2: KH}}},
 		p3Round: p3Round{
-			initialPicks: []Faction{NG, SL, KH},
-			ban:          OK,
-			counterBan:   OK,
-			matchup:      Matchup{P1Pick: OK, P2Pick: SL}},
+			picks:      []Faction{NG, SL, KH},
+			ban:        OK,
+			counterBan: OK,
+			matchup:    Matchup{P1: OK, P2: SL}},
 	}
 	gameStateCopy := deepcopy(gameState)
 
 	if !(gameStateCopy.p2rounds[0].matchup == gameState.p2rounds[0].matchup) {
 		t.Errorf(fmt.Sprint("Cloned matchups not equal, failing."))
 	}
-	gameStateCopy.p2rounds[0].matchup.P1Pick = OK
+	gameStateCopy.p2rounds[0].matchup.P1 = OK
 	if gameStateCopy.p2rounds[0].matchup == gameState.p2rounds[0].matchup {
 		t.Errorf(fmt.Sprint("Setting copy values impacted the non-copy, failing."))
 	}
 
-	gameState.p2rounds[0].matchup.P2Pick = KH
-	if gameStateCopy.p2rounds[0].matchup.P2Pick == KH {
+	gameState.p2rounds[0].matchup.P2 = KH
+	if gameStateCopy.p2rounds[0].matchup.P2 == KH {
 		t.Errorf(fmt.Sprint("Setting uncopied values impacted the original, failing."))
 	}
 }
