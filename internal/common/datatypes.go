@@ -3,8 +3,7 @@ package common
 type Faction string
 
 const (
-	DC    Faction = "DC"
-	GC            = "GC"
+	GC    Faction = "GC"
 	KH            = "KH"
 	KI            = "KI"
 	NG            = "NG"
@@ -13,6 +12,15 @@ const (
 	TZ            = "TZ"
 	EMPTY         = ""
 )
+
+var Factions = map[Faction]bool{
+	GC: true,
+	KH: true,
+	KI: true,
+	NG: true,
+	OK: true,
+	SL: true,
+	TZ: true}
 
 type Matchup struct {
 	P1Pick Faction

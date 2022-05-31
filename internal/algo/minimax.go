@@ -5,9 +5,7 @@ import (
 	"math"
 )
 
-func TurinMinimax(tournamentInfo TournamentInfo, gameState gameState, isMaximizingPlayer bool, alpha int, beta int) float64 {
-	// Recursively expand tree w/pruning
-
+func TurinMinimax(tournamentInfo TournamentInfo, gameState gameState, isMaximizingPlayer bool, alpha float64, beta float64) float64 {
 	draftIsComplete := (gameState.depth == tournamentInfo.RoundCount) &&
 		(gameState.p3Round.matchup.P1Pick != EMPTY)
 	if draftIsComplete {
@@ -16,12 +14,12 @@ func TurinMinimax(tournamentInfo TournamentInfo, gameState gameState, isMaximizi
 
 	if isMaximizingPlayer {
 		bestVal := -1.0
-
-		successors := getSuccessors(gameState)
+		successors := getSuccessors(tournamentInfo, gameState)
 		for _, v := range successors {
 			// Make sure the false alternation works here
 			value := TurinMinimax(tournamentInfo, v, false, alpha, beta)
 			bestVal = math.Max(bestVal, value)
+			alpha = math.Max(alpha, bestVal)
 			if beta <= alpha {
 				break
 			}
@@ -29,11 +27,12 @@ func TurinMinimax(tournamentInfo TournamentInfo, gameState gameState, isMaximizi
 		return bestVal
 	} else {
 		bestVal := 2.0
-		successors := getSuccessors(gameState)
+		successors := getSuccessors(tournamentInfo, gameState)
 		for _, v := range successors {
 			// Make sure the false alternation works here
 			value := TurinMinimax(tournamentInfo, v, true, alpha, beta)
 			bestVal = math.Min(bestVal, value)
+			beta = math.Min(beta, bestVal)
 			if beta <= alpha {
 				break
 			}

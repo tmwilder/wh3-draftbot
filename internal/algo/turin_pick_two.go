@@ -6,22 +6,22 @@ import (
 )
 
 type p2Round struct {
-	prospectivePicks [2]common.Faction
-	matchup          *common.Matchup
+	initialPicks []common.Faction
+	matchup      common.Matchup
 }
 
 type p3Round struct {
-	prospectivePicks [3]common.Faction
-	ban              common.Faction
-	counterBan       common.Faction
-	matchup          *common.Matchup
+	initialPicks []common.Faction
+	ban          common.Faction
+	counterBan   common.Faction
+	matchup      common.Matchup
 }
 
 type gameState struct {
 	depth        int
 	currentRound int
 	p2rounds     []p2Round
-	p3Round      *p3Round
+	p3Round      p3Round
 }
 
 type resultAndOdds struct {
@@ -29,8 +29,202 @@ type resultAndOdds struct {
 	odds   float64
 }
 
-func getSuccessors(state gameState) []gameState {
-	return []gameState{}
+func getSuccessors(tournamentInfo common.TournamentInfo, previousGameState gameState) []gameState {
+	if previousGameState.depth < tournamentInfo.RoundCount {
+		return getSuccessorsP2(previousGameState)
+	} else {
+		return getSuccessorsP3(previousGameState, true)
+	}
+}
+
+/**
+Evaluate a pre-last pick, so all rounds but the last in Turin rules.
+There are 3 cases:
+1. We need to do initial picks
+2. We need to counterpick
+3. We need to do final pick
+We also must figure out who is picking first, p1, or p2 from gamestate.
+We also need to determine what factions remain for each player if we are in 1 or 3.
+*/
+func getSuccessorsP2(previousGameState gameState) []gameState {
+	var successors []gameState
+
+	currentRoundIndex := len(previousGameState.p2rounds) - 1
+	currentRound := previousGameState.p2rounds[currentRoundIndex]
+	isP1Pick := previousGameState.depth%2 == 1
+	isInitialPicks := currentRound.initialPicks == nil
+
+	if isInitialPicks {
+		pickCombos := getTwoCombos(previousGameState, isP1Pick)
+		for _, v := range pickCombos {
+			newGameState := deepcopy(previousGameState)
+			newGameState.p2rounds[len(newGameState.p2rounds)-1].initialPicks = v
+			successors = append(successors, newGameState)
+		}
+		return successors
+	}
+	isCounterPick := currentRound.matchup.P1Pick == common.EMPTY
+	if isCounterPick {
+		remainingPicks := getRemainingPicks(previousGameState, isP1Pick)
+		for _, v := range remainingPicks {
+			newGameState := deepcopy(previousGameState)
+			if isP1Pick {
+				// If it is p1 pick, p2 is _counterpicking_
+				newGameState.p2rounds[len(newGameState.p2rounds)-1].matchup.P2Pick = v
+			} else {
+				// Otherwise p1 is counterpicking
+				newGameState.p2rounds[len(newGameState.p2rounds)-1].matchup.P1Pick = v
+			}
+			successors = append(successors, newGameState)
+		}
+		return successors
+	} else {
+		// We're on final pick if not the above two
+		for _, v := range currentRound.initialPicks {
+			newGameState := deepcopy(previousGameState)
+			if isP1Pick {
+				newGameState.p2rounds[len(newGameState.p2rounds)-1].matchup.P1Pick = v
+			} else {
+				newGameState.p2rounds[len(newGameState.p2rounds)-1].matchup.P2Pick = v
+			}
+			successors = append(successors, newGameState)
+		}
+		return successors
+	}
+}
+
+/**
+Evaluate the last pick.
+There are 3 cases:
+1. We need to do initial picks and ban
+2. We need to do counterpick and ban
+3. We need to do final pick
+We also must figure out who is picking first, p1 or p2 from gamestate.
+We also need to determine what factions remain for each player in 1 or 3.
+*/
+func getSuccessorsP3(previousGameState gameState, isP1Pick bool) []gameState {
+	isInitialPick := len(previousGameState.p3Round.initialPicks) == 0
+
+	var successors []gameState
+
+	if isInitialPick {
+		pickCombos := getThreeCombos(previousGameState, isP1Pick)
+		for _, initialPicks := range pickCombos {
+			newGameState := deepcopy(previousGameState)
+			newGameState.p3Round.initialPicks = initialPicks
+
+			remainingBans := getRemainingPicks(previousGameState, !isP1Pick)
+			for _, ban := range remainingBans {
+				newGameStateWithBan := deepcopy(newGameState)
+				newGameStateWithBan.p3Round.ban = ban
+				successors = append(successors, newGameStateWithBan)
+			}
+			return successors
+		}
+	}
+	// TODO need to ensure we properly initialize nullity story across board for this to jive
+	isCounterPick := previousGameState.p3Round.counterBan == common.EMPTY
+	if isCounterPick {
+		counterBans := previousGameState.p3Round.initialPicks
+		for _, counterBan := range counterBans {
+			newGameState := deepcopy(previousGameState)
+			newGameState.p3Round.counterBan = counterBan
+			remainingPicks := getRemainingPicks(previousGameState, !isP1Pick)
+
+			for _, pick := range remainingPicks {
+				newGameStateWithBan := deepcopy(newGameState)
+				newGameStateWithBan.p3Round.counterBan = counterBan
+				if !isP1Pick {
+					newGameStateWithBan.p3Round.matchup.P2Pick = pick
+				} else {
+					newGameStateWithBan.p3Round.matchup.P1Pick = pick
+				}
+				successors = append(successors, newGameState)
+			}
+		}
+		return successors
+	} else {
+		// We're on final pick if not the above two
+		for _, v := range previousGameState.p3Round.initialPicks {
+			newGameState := deepcopy(previousGameState)
+			if isP1Pick {
+				newGameState.p3Round.matchup.P1Pick = v
+			} else {
+				newGameState.p3Round.matchup.P2Pick = v
+			}
+			successors = append(successors, newGameState)
+		}
+		return successors
+	}
+}
+
+func getRemainingPicks(previousGameState gameState, isP1 bool) []common.Faction {
+	remainingFactions := map[common.Faction]bool{}
+	for k, v := range common.Factions {
+		remainingFactions[k] = v
+	}
+	for _, v := range previousGameState.p2rounds {
+		if isP1 {
+			delete(remainingFactions, v.matchup.P1Pick)
+		} else {
+			delete(remainingFactions, v.matchup.P2Pick)
+		}
+	}
+	var remainingFactionsList []common.Faction
+
+	for k, _ := range remainingFactions {
+		remainingFactionsList = append(remainingFactionsList, k)
+	}
+	return remainingFactionsList
+}
+
+func getTwoCombos(state gameState, isP1Pick bool) [][]common.Faction {
+	remainingFactions := getRemainingPicks(state, isP1Pick)
+	var combos [][]common.Faction
+	for i, v := range remainingFactions {
+		for j := i + 1; j < len(remainingFactions); j++ {
+			combos = append(combos, []common.Faction{v, remainingFactions[j]})
+		}
+	}
+	return combos
+}
+
+func getThreeCombos(state gameState, isP1Pick bool) [][]common.Faction {
+	remainingFactions := getRemainingPicks(state, isP1Pick)
+	var combos [][]common.Faction
+	for i, v := range remainingFactions {
+		for j := i + 1; j < len(remainingFactions); j++ {
+			for k := j + 1; k < len(remainingFactions); k++ {
+				combos = append(combos, []common.Faction{v, remainingFactions[j], remainingFactions[k]})
+			}
+		}
+	}
+	return combos
+}
+
+func deepcopy(state gameState) gameState {
+	var p2Rounds []p2Round
+	copy(state.p2rounds, p2Rounds)
+
+	var p3RoundMatchup = common.Matchup{
+		P1Pick: state.p3Round.matchup.P1Pick,
+		P2Pick: state.p3Round.matchup.P2Pick}
+
+	var p3RoundPicks []common.Faction
+	copy(state.p3Round.initialPicks, p3RoundPicks)
+
+	var p3RoundCopy = p3Round{
+		state.p3Round.initialPicks,
+		state.p3Round.ban,
+		state.p3Round.counterBan,
+		p3RoundMatchup}
+
+	return gameState{
+		depth:        state.depth,
+		currentRound: state.currentRound,
+		p2rounds:     p2Rounds,
+		p3Round:      p3RoundCopy,
+	}
 }
 
 /**
@@ -38,8 +232,8 @@ For one specific gamestate consisting of a full set of games, compute the odds o
 */
 func computeWinRate(tournamentInfo common.TournamentInfo, gameState gameState) float64 {
 	// Validate input sanity
-	if gameState.p3Round == nil {
-		panic(fmt.Sprintf("Expected p3Round to be defined but it was not"))
+	if gameState.p3Round.matchup.P1Pick == common.EMPTY {
+		panic(fmt.Sprintf("Expected p3Round to be set but it was not"))
 	}
 	eventLength := len(gameState.p2rounds) + 1
 	if eventLength != tournamentInfo.RoundCount {
@@ -48,9 +242,9 @@ func computeWinRate(tournamentInfo common.TournamentInfo, gameState gameState) f
 
 	var matchups []common.Matchup
 	for _, v := range gameState.p2rounds {
-		matchups = append(matchups, *v.matchup)
+		matchups = append(matchups, v.matchup)
 	}
-	matchups = append(matchups, *gameState.p3Round.matchup)
+	matchups = append(matchups, gameState.p3Round.matchup)
 
 	// Expand the result tree
 	var results [][]resultAndOdds
