@@ -1,12 +1,47 @@
 package algo
 
 import (
+	"fmt"
 	. "github.com/tmwilder/wh3-draftbot/internal/common"
 	"math"
 	"testing"
 )
 
 const epsilon = .00000001
+
+func TestGetSuccessorsP3(t *testing.T) {
+	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
+	gameState := gameState{
+		roundNumber: 3,
+		p2rounds: []p2Round{
+			{initialPicks: []Faction{KH, KI}, matchup: Matchup{P1Pick: KI, P2Pick: KI}},
+			{initialPicks: []Faction{KH, TZ}, matchup: Matchup{P1Pick: TZ, P2Pick: TZ}},
+		},
+		p3Round: p3Round{},
+	}
+	gameStates := getSuccessors(tournamentInfo, gameState)
+
+	fiveChooseThree := 5 * 4 / 2
+	expected1 := fiveChooseThree * 5 // 5 for ban choices
+
+	if !(len(gameStates) == expected1) {
+		t.Errorf("Expected game states to %d items after initial pick but it had %d", expected1, len(gameStates))
+	}
+
+	gameStatesCounterPick := getSuccessors(tournamentInfo, gameStates[0])
+	expected2 := (5 - 1) * 3 // 4 for opponent choices after the ban, 3 choices for the counterban
+
+	if !(len(gameStatesCounterPick) == expected2) {
+		t.Errorf("Expected game states to %d items after counterban but it had %d", expected2, len(gameStatesCounterPick))
+	}
+
+	gameStatesFinalPick := getSuccessors(tournamentInfo, gameStatesCounterPick[0])
+	expected3 := 2
+
+	if !(len(gameStatesFinalPick) == expected3) {
+		t.Errorf("Expected game states to %d items after final pick but it had %d", expected3, len(gameStatesFinalPick))
+	}
+}
 
 func TestGetSuccessorsP2Pregame(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
@@ -21,7 +56,7 @@ func TestGetSuccessorsP2Pregame(t *testing.T) {
 		},
 	}
 	gameStates := getSuccessors(tournamentInfo, gameState)
-	expected1 := 21 // figure out closed form
+	expected1 := 7 * 6 / 2
 
 	if !(len(gameStates) == expected1) {
 		t.Errorf("Expected game states to %d items but it had %d", expected1, len(gameStates))
@@ -233,5 +268,33 @@ func TestComputeWinRateLessSimple(t *testing.T) {
 	expected := .5
 	if !(math.Abs(winRate-expected) < epsilon) {
 		t.Errorf("Expected WR to be %f but it was %f", expected, winRate)
+	}
+}
+
+func TestDeepCopy(t *testing.T) {
+	gameState := gameState{
+		roundNumber: 3,
+		p2rounds: []p2Round{
+			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
+			{initialPicks: []Faction{SL, KH}, matchup: Matchup{P1Pick: SL, P2Pick: KH}}},
+		p3Round: p3Round{
+			initialPicks: []Faction{NG, SL, KH},
+			ban:          OK,
+			counterBan:   OK,
+			matchup:      Matchup{P1Pick: OK, P2Pick: SL}},
+	}
+	gameStateCopy := deepcopy(gameState)
+
+	if !(gameStateCopy.p2rounds[0].matchup == gameState.p2rounds[0].matchup) {
+		t.Errorf(fmt.Sprint("Cloned matchups not equal, failing."))
+	}
+	gameStateCopy.p2rounds[0].matchup.P1Pick = OK
+	if gameStateCopy.p2rounds[0].matchup == gameState.p2rounds[0].matchup {
+		t.Errorf(fmt.Sprint("Setting copy values impacted the non-copy, failing."))
+	}
+
+	gameState.p2rounds[0].matchup.P2Pick = KH
+	if gameStateCopy.p2rounds[0].matchup.P2Pick == KH {
+		t.Errorf(fmt.Sprint("Setting uncopied values impacted the original, failing."))
 	}
 }

@@ -32,6 +32,7 @@ func getSuccessors(tournamentInfo common.TournamentInfo, previousGameState gameS
 	if previousGameState.roundNumber < tournamentInfo.RoundCount {
 		return getSuccessorsP2(previousGameState)
 	} else {
+		// TODO swap this to a pobabalistic handler in the recursive routine + by forking here by _both_ first and second pick and and assigning odds weighting in the caller
 		return getSuccessorsP3(previousGameState, true)
 	}
 }
@@ -135,8 +136,8 @@ func getSuccessorsP3(previousGameState gameState, isP1Pick bool) []gameState {
 				newGameStateWithBan.p3Round.ban = ban
 				successors = append(successors, newGameStateWithBan)
 			}
-			return successors
 		}
+		return successors
 	}
 	// TODO need to ensure we properly initialize nullity story across board for this to jive
 	isCounterPick := previousGameState.p3Round.counterBan == common.EMPTY
@@ -148,6 +149,9 @@ func getSuccessorsP3(previousGameState gameState, isP1Pick bool) []gameState {
 			remainingPicks := getRemainingPicks(previousGameState, !isP1Pick)
 
 			for _, pick := range remainingPicks {
+				if pick == previousGameState.p3Round.ban {
+					continue
+				}
 				newGameStateWithBan := deepcopy(newGameState)
 				newGameStateWithBan.p3Round.counterBan = counterBan
 				if !isP1Pick {
@@ -162,6 +166,9 @@ func getSuccessorsP3(previousGameState gameState, isP1Pick bool) []gameState {
 	} else {
 		// We're on final pick if not the above two
 		for _, v := range previousGameState.p3Round.initialPicks {
+			if v == previousGameState.p3Round.counterBan {
+				continue
+			}
 			newGameState := deepcopy(previousGameState)
 			if isP1Pick {
 				newGameState.p3Round.matchup.P1Pick = v
