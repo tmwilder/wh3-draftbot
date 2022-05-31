@@ -8,10 +8,43 @@ import (
 
 const epsilon = .00000001
 
+func TestGetSuccessorsP2Pregame(t *testing.T) {
+	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
+	gameState := gameState{
+		roundNumber: 1,
+		p2rounds:    []p2Round{},
+		p3Round: p3Round{
+			initialPicks: []Faction{},
+			ban:          EMPTY,
+			counterBan:   EMPTY,
+			matchup:      Matchup{P1Pick: EMPTY, P2Pick: EMPTY},
+		},
+	}
+	gameStates := getSuccessors(tournamentInfo, gameState)
+	expected1 := 21 // figure out closed form
+
+	if !(len(gameStates) == expected1) {
+		t.Errorf("Expected game states to %d items but it had %d", expected1, len(gameStates))
+	}
+
+	gameStatesCounterPick := getSuccessors(tournamentInfo, gameStates[0])
+	expected2 := 7
+
+	if !(len(gameStatesCounterPick) == expected2) {
+		t.Errorf("Expected game states to %d items but it had %d", expected2, len(gameStatesCounterPick))
+	}
+
+	gameStatesFinalPick := getSuccessors(tournamentInfo, gameStatesCounterPick[0])
+	expected3 := 2
+
+	if !(len(gameStatesFinalPick) == expected3) {
+		t.Errorf("Expected game states to %d items but it had %d", expected3, len(gameStatesFinalPick))
+	}
+}
+
 func TestPick3Combo5thPick(t *testing.T) {
 	gameState := gameState{
-		depth:        3,
-		currentRound: 3,
+		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, KI}, matchup: Matchup{P1Pick: KI, P2Pick: KI}},
 			{initialPicks: []Faction{KH, TZ}, matchup: Matchup{P1Pick: TZ, P2Pick: TZ}},
@@ -36,8 +69,7 @@ func TestPick3Combo5thPick(t *testing.T) {
 
 func TestPick3Combo3rdPick(t *testing.T) {
 	gameState := gameState{
-		depth:        3,
-		currentRound: 3,
+		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
 			{initialPicks: []Faction{KH, TZ}, matchup: Matchup{P1Pick: OK, P2Pick: TZ}}},
@@ -60,10 +92,9 @@ func TestPick3Combo3rdPick(t *testing.T) {
 
 func TestPick2Combo1stPick(t *testing.T) {
 	gameState := gameState{
-		depth:        3,
-		currentRound: 1,
-		p2rounds:     []p2Round{},
-		p3Round:      p3Round{},
+		roundNumber: 3,
+		p2rounds:    []p2Round{},
+		p3Round:     p3Round{},
 	}
 
 	p1Combos := getTwoCombos(gameState, true)
@@ -82,8 +113,7 @@ func TestPick2Combo1stPick(t *testing.T) {
 
 func TestPick2Combo3rdPick(t *testing.T) {
 	gameState := gameState{
-		depth:        3,
-		currentRound: 3,
+		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
 			{initialPicks: []Faction{KH, TZ}, matchup: Matchup{P1Pick: OK, P2Pick: TZ}}},
@@ -106,8 +136,7 @@ func TestPick2Combo3rdPick(t *testing.T) {
 
 func TestPick2Combo4thPick(t *testing.T) {
 	gameState := gameState{
-		depth:        5,
-		currentRound: 1,
+		roundNumber: 5,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
 			{initialPicks: []Faction{TZ, OK}, matchup: Matchup{P1Pick: OK, P2Pick: TZ}},
@@ -135,8 +164,7 @@ func TestComputeWinRateSimple(t *testing.T) {
 		MatchupOdds: map[Matchup]float64{Matchup{P1Pick: KH, P2Pick: SL}: .5}}
 
 	gameState := gameState{
-		depth:        3,
-		currentRound: 3,
+		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}}},
@@ -161,8 +189,7 @@ func TestComputeWinRateSimple2(t *testing.T) {
 		MatchupOdds: map[Matchup]float64{Matchup{P1Pick: KH, P2Pick: SL}: 1.0}}
 
 	gameState := gameState{
-		depth:        3,
-		currentRound: 3,
+		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}}},
@@ -190,8 +217,7 @@ func TestComputeWinRateLessSimple(t *testing.T) {
 			Matchup{P1Pick: OK, P2Pick: SL}: .5}}
 
 	gameState := gameState{
-		depth:        3,
-		currentRound: 3,
+		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
 			{initialPicks: []Faction{SL, KH}, matchup: Matchup{P1Pick: SL, P2Pick: KH}}},
