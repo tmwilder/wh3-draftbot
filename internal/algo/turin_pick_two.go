@@ -154,12 +154,12 @@ func getSuccessorsP3(previousGameState gameState, isP1Pick bool) []gameState {
 				}
 				newGameStateWithBan := deepcopy(newGameState)
 				newGameStateWithBan.p3Round.counterBan = counterBan
-				if !isP1Pick {
+				if isP1Pick {
 					newGameStateWithBan.p3Round.matchup.P2Pick = pick
 				} else {
 					newGameStateWithBan.p3Round.matchup.P1Pick = pick
 				}
-				successors = append(successors, newGameState)
+				successors = append(successors, newGameStateWithBan)
 			}
 		}
 		return successors
@@ -175,7 +175,6 @@ func getSuccessorsP3(previousGameState gameState, isP1Pick bool) []gameState {
 			} else {
 				newGameState.p3Round.matchup.P2Pick = v
 			}
-			newGameState.roundNumber += 1
 			successors = append(successors, newGameState)
 		}
 		return successors

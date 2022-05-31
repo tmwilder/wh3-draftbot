@@ -7,7 +7,7 @@ import (
 
 func TurinMinimax(tournamentInfo TournamentInfo, gameState gameState, isMaximizingPlayer bool, alpha float64, beta float64) float64 {
 	draftIsComplete := (gameState.roundNumber == tournamentInfo.RoundCount) &&
-		(gameState.p3Round.matchup.P1Pick != EMPTY)
+		(gameState.p3Round.matchup.P1Pick != EMPTY && gameState.p3Round.matchup.P2Pick != EMPTY)
 	if draftIsComplete {
 		return computeWinRate(tournamentInfo, gameState)
 	}
