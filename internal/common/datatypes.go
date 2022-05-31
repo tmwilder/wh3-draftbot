@@ -81,7 +81,7 @@ func GetMatchupValue(matchup Matchup, info TournamentInfo) float64 {
 		// Search for the opposite.
 		oppositeKey := Matchup{P1: matchup.P2, P2: matchup.P1}
 		if val2, ok2 := info.MatchupOdds[oppositeKey]; ok2 {
-			return val2
+			return 1.0 - val2
 		} else {
 			panic(fmt.Sprintf("Could not find matchup results for: %s v. %s ", matchup.P1, matchup.P2))
 		}

@@ -3,6 +3,7 @@ package algo
 import (
 	"fmt"
 	"github.com/tmwilder/wh3-draftbot/internal/common"
+	"sort"
 )
 
 type p2Round struct {
@@ -73,7 +74,7 @@ func getSuccessorsP2(previousGameState GameState) []GameState {
 	}
 
 	if isCounterPick {
-		remainingPicks := getRemainingPicks(previousGameState, isP1Pick)
+		remainingPicks := getRemainingPicks(previousGameState, !isP1Pick)
 		for _, v := range remainingPicks {
 			newGameState := deepcopy(previousGameState)
 			if isP1Pick {
@@ -198,6 +199,9 @@ func getRemainingPicks(previousGameState GameState, isP1 bool) []common.Faction 
 	for k, _ := range remainingFactions {
 		remainingFactionsList = append(remainingFactionsList, k)
 	}
+	sort.Slice(remainingFactionsList, func(i, j int) bool {
+		return remainingFactionsList[i] < remainingFactionsList[j]
+	})
 	return remainingFactionsList
 }
 
