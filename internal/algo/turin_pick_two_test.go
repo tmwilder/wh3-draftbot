@@ -271,6 +271,40 @@ func TestComputeWinRateLessSimple(t *testing.T) {
 	}
 }
 
+func TestComputeWinRateRegression(t *testing.T) {
+	tournamentInfo := TournamentInfo{
+		RoundCount: 5,
+		MatchupOdds: map[Matchup]float64{
+			Matchup{P1: NG, P2: NG}: .5,
+			Matchup{P1: TZ, P2: TZ}: .5,
+			Matchup{P1: KH, P2: KH}: .5,
+			Matchup{P1: SL, P2: SL}: .5,
+			Matchup{P1: KI, P2: KI}: .5,
+		}}
+
+	gameState := GameState{
+		roundNumber: 5,
+		p2rounds: []p2Round{
+			{picks: []Faction{KH, SL}, matchup: Matchup{P1: NG, P2: NG}},
+			{picks: []Faction{SL, KH}, matchup: Matchup{P1: TZ, P2: TZ}},
+			{picks: []Faction{SL, KH}, matchup: Matchup{P1: KH, P2: KH}},
+			{picks: []Faction{SL, KH}, matchup: Matchup{P1: SL, P2: SL}},
+		},
+		p3Round: p3Round{
+			picks:      []Faction{NG, SL, KH},
+			ban:        OK,
+			counterBan: OK,
+			matchup:    Matchup{P1: KI, P2: KI}},
+	}
+
+	winRate := computeWinRate(tournamentInfo, gameState)
+
+	expected := .5
+	if !(math.Abs(winRate-expected) < epsilon) {
+		t.Errorf("Expected WR to be %f but it was %f", expected, winRate)
+	}
+}
+
 func TestDeepCopy(t *testing.T) {
 	gameState := GameState{
 		roundNumber: 3,

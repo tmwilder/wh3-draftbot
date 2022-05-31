@@ -289,8 +289,14 @@ func computeWinRate(tournamentInfo common.TournamentInfo, gameState GameState) f
 			results = append(results, current)
 		} else {
 			rNextOdds := common.GetMatchupValue(matchups[len(current)], tournamentInfo)
-			stack = append(stack, append(current, resultAndOdds{true, rNextOdds}))
-			stack = append(stack, append(current, resultAndOdds{false, 1.0 - rNextOdds}))
+			nextWin := make([]resultAndOdds, len(current))
+			nextLoss := make([]resultAndOdds, len(current))
+			copy(nextWin, current)
+			copy(nextLoss, current)
+			nextWin = append(nextWin, resultAndOdds{true, rNextOdds})
+			nextLoss = append(nextLoss, resultAndOdds{false, 1.0 - rNextOdds})
+			stack = append(stack, nextWin)
+			stack = append(stack, nextLoss)
 		}
 	}
 

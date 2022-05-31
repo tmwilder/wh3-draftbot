@@ -6,6 +6,20 @@ import (
 	"testing"
 )
 
+func TestMinimaxFullGame5(t *testing.T) {
+	tournamentInfo := TournamentInfo{RoundCount: 5, MatchupOdds: MatchupsV1d2}
+	gameState := GameState{
+		roundNumber: 1,
+		p2rounds:    []p2Round{},
+		p3Round:     p3Round{},
+	}
+
+	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
+
+	fmt.Printf("%f\n", value)
+	fmt.Printf("%+v\n", gameState)
+}
+
 func TestMinimaxFullGame(t *testing.T) {
 
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
