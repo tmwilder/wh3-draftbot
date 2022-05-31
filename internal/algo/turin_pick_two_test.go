@@ -11,7 +11,7 @@ const epsilon = .00000001
 
 func TestGetSuccessorsP3(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
-	gameState := gameState{
+	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, KI}, matchup: Matchup{P1Pick: KI, P2Pick: KI}},
@@ -45,7 +45,7 @@ func TestGetSuccessorsP3(t *testing.T) {
 
 func TestGetSuccessorsP2Pregame(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
-	gameState := gameState{
+	gameState := GameState{
 		roundNumber: 1,
 		p2rounds:    []p2Round{},
 		p3Round: p3Round{
@@ -78,7 +78,7 @@ func TestGetSuccessorsP2Pregame(t *testing.T) {
 }
 
 func TestPick3Combo5thPick(t *testing.T) {
-	gameState := gameState{
+	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, KI}, matchup: Matchup{P1Pick: KI, P2Pick: KI}},
@@ -103,7 +103,7 @@ func TestPick3Combo5thPick(t *testing.T) {
 }
 
 func TestPick3Combo3rdPick(t *testing.T) {
-	gameState := gameState{
+	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
@@ -126,7 +126,7 @@ func TestPick3Combo3rdPick(t *testing.T) {
 }
 
 func TestPick2Combo1stPick(t *testing.T) {
-	gameState := gameState{
+	gameState := GameState{
 		roundNumber: 3,
 		p2rounds:    []p2Round{},
 		p3Round:     p3Round{},
@@ -147,7 +147,7 @@ func TestPick2Combo1stPick(t *testing.T) {
 }
 
 func TestPick2Combo3rdPick(t *testing.T) {
-	gameState := gameState{
+	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
@@ -170,7 +170,7 @@ func TestPick2Combo3rdPick(t *testing.T) {
 }
 
 func TestPick2Combo4thPick(t *testing.T) {
-	gameState := gameState{
+	gameState := GameState{
 		roundNumber: 5,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
@@ -198,7 +198,7 @@ func TestComputeWinRateSimple(t *testing.T) {
 		RoundCount:  3,
 		MatchupOdds: map[Matchup]float64{Matchup{P1Pick: KH, P2Pick: SL}: .5}}
 
-	gameState := gameState{
+	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
@@ -223,7 +223,7 @@ func TestComputeWinRateSimple2(t *testing.T) {
 		RoundCount:  3,
 		MatchupOdds: map[Matchup]float64{Matchup{P1Pick: KH, P2Pick: SL}: 1.0}}
 
-	gameState := gameState{
+	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
@@ -251,7 +251,7 @@ func TestComputeWinRateLessSimple(t *testing.T) {
 			Matchup{P1Pick: SL, P2Pick: KH}: .4,
 			Matchup{P1Pick: OK, P2Pick: SL}: .5}}
 
-	gameState := gameState{
+	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
@@ -272,7 +272,7 @@ func TestComputeWinRateLessSimple(t *testing.T) {
 }
 
 func TestDeepCopy(t *testing.T) {
-	gameState := gameState{
+	gameState := GameState{
 		roundNumber: 3,
 		p2rounds: []p2Round{
 			{initialPicks: []Faction{KH, SL}, matchup: Matchup{P1Pick: KH, P2Pick: SL}},
