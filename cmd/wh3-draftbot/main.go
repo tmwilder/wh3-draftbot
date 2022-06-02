@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
-	minimax "github.com/tmwilder/wh3-draftbot/internal/algo"
+	"github.com/tmwilder/wh3-draftbot/internal/web/app"
 )
 
 func main() {
-	fmt.Println("Hello, world.")
-	minimax.Minimax()
+	app.App()
 }

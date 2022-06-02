@@ -47,7 +47,7 @@ var MatchupsV1d2 = map[Matchup]float64{
 	Matchup{GC, TZ}: .4,
 
 	Matchup{KH, KH}: .5,
-	Matchup{KH, KI}: .55,
+	Matchup{KH, KI}: .5,
 	Matchup{KH, NG}: .3,
 	Matchup{KH, OK}: .6,
 	Matchup{KH, SL}: .65,

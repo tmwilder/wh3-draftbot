@@ -46,12 +46,45 @@ var matchupsPolarized = map[Matchup]float64{
 func TestMinimaxFullGame5(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 5, MatchupOdds: MatchupsV1d2}
 	gameState := GameState{
-		roundNumber: 1,
-		p2rounds:    []p2Round{},
-		p3Round:     p3Round{},
-		roundPhase:  0,
+		RoundNumber: 1,
+		P2rounds:    []P2Round{},
+		P3Round:     P3Round{},
+		RoundPhase:  0,
 	}
 
+	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
+
+	fmt.Printf("%f\n", value)
+	fmt.Printf("%+v\n", gameState)
+}
+
+func TestMinimaxFullGame52ndPick(t *testing.T) {
+	tournamentInfo := TournamentInfo{RoundCount: 5, MatchupOdds: MatchupsV1d2}
+	gameState := GameState{
+		RoundNumber: 2,
+		P2rounds: []P2Round{
+			{Picks: []Faction{NG, TZ}, Matchup: Matchup{P1: NG, P2: KI}},
+		},
+		P3Round:    P3Round{},
+		RoundPhase: 0,
+	}
+	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
+
+	fmt.Printf("%f\n", value)
+	fmt.Printf("%+v\n", gameState)
+}
+
+func TestMinimaxFullGame3rdPick(t *testing.T) {
+	tournamentInfo := TournamentInfo{RoundCount: 5, MatchupOdds: MatchupsV1d2}
+	gameState := GameState{
+		RoundNumber: 3,
+		P2rounds: []P2Round{
+			{Picks: []Faction{NG, TZ}, Matchup: Matchup{P1: NG, P2: KI}},
+			{Picks: []Faction{OK, KI}, Matchup: Matchup{KH, KI}},
+		},
+		P3Round:    P3Round{},
+		RoundPhase: 0,
+	}
 	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
 
 	fmt.Printf("%f\n", value)
@@ -61,12 +94,11 @@ func TestMinimaxFullGame5(t *testing.T) {
 func TestMinimaxFullGame3(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
 	gameState := GameState{
-		roundNumber: 1,
-		p2rounds:    []p2Round{},
-		p3Round:     p3Round{},
-		roundPhase:  0,
+		RoundNumber: 1,
+		P2rounds:    []P2Round{},
+		P3Round:     P3Round{},
+		RoundPhase:  0,
 	}
-
 	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
 
 	fmt.Printf("%f\n", value)
@@ -76,13 +108,13 @@ func TestMinimaxFullGame3(t *testing.T) {
 func TestMinimaxR3(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
 	gameState := GameState{
-		roundNumber: 3,
-		p2rounds: []p2Round{
-			{picks: []Faction{SL, TZ}, matchup: Matchup{P1: TZ, P2: GC}},
-			{picks: []Faction{KH, TZ}, matchup: Matchup{P1: OK, P2: KH}},
+		RoundNumber: 3,
+		P2rounds: []P2Round{
+			{Picks: []Faction{SL, TZ}, Matchup: Matchup{P1: TZ, P2: GC}},
+			{Picks: []Faction{KH, TZ}, Matchup: Matchup{P1: OK, P2: KH}},
 		},
-		p3Round:    p3Round{},
-		roundPhase: 0,
+		P3Round:    P3Round{},
+		RoundPhase: 0,
 	}
 
 	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
@@ -94,10 +126,10 @@ func TestMinimaxR3(t *testing.T) {
 func TestMinimaxR3Polarized(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: matchupsPolarized}
 	gameState := GameState{
-		roundNumber: 1,
-		p2rounds:    []p2Round{},
-		p3Round:     p3Round{},
-		roundPhase:  0,
+		RoundNumber: 1,
+		P2rounds:    []P2Round{},
+		P3Round:     P3Round{},
+		RoundPhase:  0,
 	}
 
 	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
