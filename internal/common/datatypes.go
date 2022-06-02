@@ -56,7 +56,7 @@ var MatchupsV1d2 = map[Matchup]float64{
 	Matchup{KI, KI}: .5,
 	Matchup{KI, NG}: .4,
 	Matchup{KI, OK}: .6,
-	Matchup{KI, SL}: .6,
+	Matchup{KI, SL}: .65,
 	Matchup{KI, TZ}: .6,
 
 	Matchup{NG, NG}: .5,
@@ -74,13 +74,13 @@ var MatchupsV1d2 = map[Matchup]float64{
 	Matchup{TZ, TZ}: .5,
 }
 
-func GetMatchupValue(matchup Matchup, info TournamentInfo) float64 {
-	if val, ok := info.MatchupOdds[matchup]; ok {
+func GetMatchupValue(matchup Matchup, tournamentInfo TournamentInfo) float64 {
+	if val, ok := tournamentInfo.MatchupOdds[matchup]; ok {
 		return val
 	} else {
 		// Search for the opposite.
 		oppositeKey := Matchup{P1: matchup.P2, P2: matchup.P1}
-		if val2, ok2 := info.MatchupOdds[oppositeKey]; ok2 {
+		if val2, ok2 := tournamentInfo.MatchupOdds[oppositeKey]; ok2 {
 			return 1.0 - val2
 		} else {
 			panic(fmt.Sprintf("Could not find matchup results for: %s v. %s ", matchup.P1, matchup.P2))

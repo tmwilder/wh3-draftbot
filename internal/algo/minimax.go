@@ -19,10 +19,11 @@ func TurinMinimax(tournamentInfo TournamentInfo, gameState GameState, isMaximizi
 		for _, v := range successors {
 			// Make sure the false alternation works here
 			value, candidateGameState := TurinMinimax(tournamentInfo, v, false, alpha, beta)
-			if value >= bestVal {
-				bestVal = value
+
+			if value > bestVal {
 				bestGameState = candidateGameState
 			}
+
 			bestVal = math.Max(bestVal, value)
 			alpha = math.Max(alpha, bestVal)
 			if beta <= alpha {
@@ -37,10 +38,12 @@ func TurinMinimax(tournamentInfo TournamentInfo, gameState GameState, isMaximizi
 		for _, v := range successors {
 			// Make sure the false alternation works here
 			value, candidateGameState := TurinMinimax(tournamentInfo, v, true, alpha, beta)
-			if value <= bestVal {
+
+			if value < bestVal {
 				bestGameState = candidateGameState
-				bestVal = value
 			}
+
+			bestVal = math.Min(bestVal, value)
 			beta = math.Min(beta, bestVal)
 			if beta <= alpha {
 				break

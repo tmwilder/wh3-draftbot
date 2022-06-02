@@ -332,3 +332,26 @@ func TestDeepCopy(t *testing.T) {
 		t.Errorf(fmt.Sprint("Setting uncopied values impacted the original, failing."))
 	}
 }
+
+/**
+We were computing the wrong odds. Add that scenario.
+*/
+func TestComputeWinrateRegression(t *testing.T) {
+	gameState := GameState{
+		roundNumber: 3,
+		p2rounds: []p2Round{
+			{picks: []Faction{}, matchup: Matchup{P1: TZ, P2: GC}},
+			{picks: []Faction{}, matchup: Matchup{P1: KH, P2: KH}}},
+		p3Round: p3Round{
+			picks:      []Faction{},
+			ban:        OK,
+			counterBan: OK,
+			matchup:    Matchup{P1: SL, P2: NG}},
+	}
+
+	result := computeWinRate(TournamentInfo{RoundCount: 3, MatchupOdds: matchupsPolarized}, gameState)
+	expected := 0.0
+	if !(math.Abs(result-expected) < epsilon) {
+		t.Errorf("Expected WR to be %f but it was %f", expected, result)
+	}
+}
