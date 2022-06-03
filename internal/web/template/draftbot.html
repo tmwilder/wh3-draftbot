@@ -14,83 +14,159 @@
     <div class="row">
         <div class="col-4">
             <h2>Matchup Odds</h2>
-            <form action="/evaluate/" method="POST">
                 <fieldset id="matchups">
                     {{ range $key, $value := .TournamentInfo.MatchupOdds }}
-                        <p><input id="{{$key.P1}}{{$key.P2}}" name="{{$key.P1}}-{{$key.P2}}" type="text" placeholder="{{$key.P1}}-{{$key.P2}}" value="{{$value}}"/>&nbsp<label for="{{$key.P1}}{{$key.P2}}">{{$key.P1}}-{{$key.P2}}</label></p>
+                        <div class="form-group">
+                            <input id="{{$key.P1}}{{$key.P2}}" form="updateForm" name="{{$key.P1}}-{{$key.P2}}" type="text" placeholder="{{$key.P1}}-{{$key.P2}}" value="{{$value}}"/>
+                            <label for="{{$key.P1}}{{$key.P2}}">{{$key.P1}}-{{$key.P2}}</label>
+                        </div>
                     {{end}}
                 </fieldset>
-            </form>
         </div>
-        <div class="col-5">
+        <div class="col-8">
+            <form id="updateForm">
             <h2>Pre-Match Rules</h2>
             <div class="row">
-                <form action="/evaluate/" method="POST">
                     <fieldset id="gameConfig">
-                        <p><input id="rounds" name="Rounds" type="text" placeholder="3" value="3"/>&nbsp<label for="rounds">Number of Rounds</label></p>
-                        <p><input id="areYouP1" name="areYouP1" type="checkbox" value/>&nbsp<label for="areYouP1">Are You the First Picker?</label></p>
+                        <div class="form-group">
+                            <input id="rounds" name="Rounds" type="text" placeholder="3" value="3"/>
+                            <label for="rounds">Number of Rounds</label>
+                        </div>
+                        <div class="form-group">
+                            <input id="areYouP1" name="areYouP1" type="checkbox" value/>
+                            <label for="areYouP1">Are you Player 1 for this match?</label>
+                        </div>
                     </fieldset>
-                </form>
             </div>
             <h2>Current Match State</h2>
             <div class="row">
-                <form>
                     {{ range $i, $gs := .GameState.P2rounds }}
-                        <h3>Round {{$i}}</h3>
                         <fieldset id="round-{{.Matchup}}">
                             <div class="form-row">
                                 <div class="col form-group">
-                                    <input id="round-{{.Matchup}}-picks" type="text" value="{{index .Picks 0}} {{index .Picks 1}} "/>
-                                    <label for="round-{{.Matchup}}-picks">Picks</label>
+                                    <input id="round-{{$i}}-picks" type="text" value="{{index .Picks 0}} {{index .Picks 1}} "  aria-describedby="initialPicks"/>
+                                    <label for="round-{{$i}}-picks">Picks</label>
+                                    <small class="form-text text-muted" id="initialPicks">
+                                        Format picks as F1 space F2, e.g. OK KI.
+                                    </small>
                                 </div>
                                 <div class="col form-group">
-                                    <input id="round-{{.Matchup}}-p2pick" name="round-{{.Matchup}}-p2pick" type="text" value="{{.Matchup.P2}}"/>
-                                    <label for="round-{{.Matchup}}-p2pick">Player 2 Pick</label>
+                                    <input id="round-{{$i}}-p2pick" name="round-{{$i}}-p2pick" type="text" value="{{.Matchup.P2}}" aria-describedby="p2Pick"/>
+                                    <label for="round-{{$i}}-p2pick">Player 2 Pick</label>
+                                    <small class="form-text text-muted" id="p2Pick">
+                                        Player 2 is what the match's player 2 picked, regardless of whether they were first or second pick for this round.
+                                    </small>
                                 </div>
                                 <div class="col form-group">
-                                    <input id="round-{{.Matchup}}-p1pick" name="round-{{.Matchup}}-p1pick" type="text" value="{{.Matchup.P1}}"/>
-                                    <label for="round-{{.Matchup}}-p1pick">Player 1 Pick</label>
+                                    <input id="round-{{$i}}-p1pick" name="round-{{$i}}-p1pick" type="text" value="{{.Matchup.P1}}" aria-describedby="p1Pick"/>
+                                    <label for="round-{{$i}}-p1pick">Player 1 Pick</label>
+                                    <small class="form-text text-muted" id="p1Pick">
+                                        Ditto the player 2 help.
+                                    </small>
                                 </div>
+                                <div class="col-2"><h3>Round {{$i}}</h3></div>
                             </div>
                         </fieldset>
                     {{end}}
 
-                    <h3>Final Round</h3>
-                    <div class="form-row">
-                    {{ if .RenderExistingP3}}
-                        <div class="col-2 form-group">
-                            <input id="p3-picks" type="text" name="p3-picks" value="{{index .GameState.P3Round.Picks 0}} {{index .GameState.P3Round.Picks 1}} {{index .GameState.P3Round.Picks 2}}"/>
-                            <label for="p3-picks">Picks</label>
-                        </div>
-                        <div class="col-2 form-group">
-                            <input id="p3-ban" type="text" value="{{.GameState.P3Round.Ban}}"/>
-                            <label for="p3-ban">Ban</label>
-                        </div>
-                        <div class="col-2 form-group">
-                            <input id="counter-ban" type="text" value="{{.GameState.P3Round.CounterBan}}"/>
-                            <label for="counter-ban">Counter Ban</label>
-                        </div>
-                        <div class="col-2 form-group">
-                            <input id="pick" type="text" value="{{.GameState.P3Round.Matchup.P2}}"/>
-                            <label for="pick">Player 2 Pick</label>
-                        </div>
-                        <div class="col-2 form-group">
-                            <input id="final-pick" type="text" value="{{.GameState.P3Round.Matchup.P1}}"/>
-                            <label for="final-pick">Player 1 Pick</label>
-                        </div>
+                    {{ if .RenderNewP2}}
+                        <fieldset id="round-next">
+                            <div class="form-row">
+                                <div class="col form-group">
+                                    <input id="round-next-picks" type="text" value="" aria-describedby="initialPicks" name="round-next-picks"/>
+                                    <label for="round-next-picks">Picks</label>
+                                    <small class="form-text text-muted" id="initialPicks">
+                                        Format picks as F1 space F2, e.g. OK KI.
+                                    </small>
+                                </div>
+                                <div class="col form-group">
+                                    <input id="round-next-p2pick" name="round-next-p2pick" type="text" aria-describedby="p2Pick"/>
+                                    <label for="round-next-p2pick">Player 2 Pick</label>
+                                    <small class="form-text text-muted" id="p2Pick">
+                                        Player 2 is what the match's player 2 picked, regardless of whether they were first or second pick for this round.
+                                    </small>
+                                </div>
+                                <div class="col form-group">
+                                    <input id="round-next-p1pick" name="round-next-p1pick" type="text" aria-describedby="p1Pick"/>
+                                    <label for="round-next-p1pick">Player 1 Pick</label>
+                                    <small class="form-text text-muted" id="p1Pick">
+                                        Ditto the player 2 help.
+                                    </small>
+                                </div>
+                                <div class="col-2"><h3>Next Round</h3></div>
+                            </div>
+                        </fieldset>
                     {{ end }}
+
+                    <fieldset id="round-final">
+                        <div class="form-row">
+                        {{ if .RenderExistingP3}}
+                            <div class="col-2 form-group">
+                                <input id="round-final-picks" type="text" name="round-final-picks" value="{{index .GameState.P3Round.Picks 0}} {{index .GameState.P3Round.Picks 1}} {{index .GameState.P3Round.Picks 2}}"/>
+                                <label for="round-final-picks">Picks</label>
+                            </div>
+                            <div class="col-2 form-group">
+                                <input id="round-final-ban" type="text" value="{{.GameState.P3Round.Ban}}"/>
+                                <label for="round-final-ban">Ban</label>
+                            </div>
+                            <div class="col-2 form-group">
+                                <input id="round-final-counter-ban" type="text" value="{{.GameState.P3Round.CounterBan}}" name="round-final-counter-ban"/>
+                                <label for="round-final-counter-ban">Counter Ban</label>
+                            </div>
+                            <div class="col-2 form-group">
+                                <input id="round-final-p2-pick" type="text" value="{{.GameState.P3Round.Matchup.P2}}" name="round-final-p2-pick"/>
+                                <label for="round-final-p2-pick">Player 2 Pick</label>
+                            </div>
+                            <div class="col-2 form-group">
+                                <input id="round-final-p1-pick" type="text" value="{{.GameState.P3Round.Matchup.P1}}" name="round-final-p1-pick" />
+                                <label for="round-final-p1-pick">Player 1 Pick</label>
+                            </div>
+                            <div class="col-2"><h3>Final Round</h3></div>
+                        {{ end }}
+
+                        {{ if .RenderNewP3}}
+                            <div class="col-2 form-group">
+                                <input id="round-final-picks" type="text" name="round-final-picks" value=""/>
+                                <label for="round-final-picks">Picks</label>
+                            </div>
+                            <div class="col-2 form-group">
+                                <input id="round-final-ban" type="text" name="round-final-ban" value=""/>
+                                <label for="round-final-ban">Ban</label>
+                            </div>
+                            <div class="col-2 form-group">
+                                <input id="round-final-counter-ban" type="text" name="round-final-counter-ban" value=""/>
+                                <label for="round-final-counter-ban">Counter Ban</label>
+                            </div>
+                            <div class="col-2 form-group">
+                                <input id="round-final-counter-pick" type="text" name="round-final-counter-pick" value=""/>
+                                <label for="round-final-counter-pick">Player 2 Pick</label>
+                            </div>
+                            <div class="col-2 form-group">
+                                <input id="round-final-pick" type="text" name="round-final-pick" value=""/>
+                                <label for="round-final-pick">Player 1 Pick</label>
+                            </div>
+                            <div class="col-2"><h3>Final Round</h3></div>
+                        {{ end }}
+                        </div>
+                    </fieldset>
+                    <div class="form-row">
+                        <div class="col-3">
+                            <button type="submit" formaction="/view" class="btn btn-primary" aria-describedby="updateMatchStateHelp">Update Current Match State</button>
+                            <small class="form-text text-muted" id="updateMatchStateHelp">
+                                Hit this to update the match state with your latest info. Used to get a new row of regular pick rounds when catching the state up to current.
+                            </small>
+                        </div>
+                        <div class="col-3">
+                            <button type="submit" formaction="/recommend" class="btn btn-primary" aria-describedby="recommendHelp">Get Recommendation</button>
+                            <small class="form-text text-muted" id="recommendHelp">
+                                Generates a recommendation for the next move based on the current game state.
+                            </small>
+                        </div>
                     </div>
-                </form>
             </div>
-        </div>
-        <div class="row">
-            <h1>Pick Evaluation</h1>
-            <div class="col-3">
-                <button type="submit" class="btn btn-primary">Evaluate</button>
-            </div>
+            </form>
         </div>
     </div>
-
 </div>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>

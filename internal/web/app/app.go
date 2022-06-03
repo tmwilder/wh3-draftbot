@@ -7,6 +7,6 @@ import (
 
 func App() {
 	http.HandleFunc("/view/", viewHandler)
-	http.HandleFunc("/evaluate/", evaluateHandler)
+	http.HandleFunc("/recommend/", recommendHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

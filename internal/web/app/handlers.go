@@ -14,8 +14,8 @@ type pageData struct {
 	GameState        GameState
 	TournamentInfo   TournamentInfo
 	SuggestedLine    GameState
-	RenderFreshP2    bool
-	RenderFreshP3    bool
+	RenderNewP2      bool
+	RenderNewP3      bool
 	RenderExistingP3 bool
 }
 
@@ -40,9 +40,9 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 					Ban:        OK,
 					CounterBan: OK,
 					Matchup:    Matchup{P1: KH, P2: SL}}},
-			RenderFreshP2:    false,
-			RenderFreshP3:    false,
-			RenderExistingP3: true,
+			RenderNewP2:      true,
+			RenderNewP3:      true,
+			RenderExistingP3: false,
 		},
 	)
 	if err != nil {
@@ -51,7 +51,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func evaluateHandler(w http.ResponseWriter, r *http.Request) {
+func recommendHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse later
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
 	gameState := GameState{
