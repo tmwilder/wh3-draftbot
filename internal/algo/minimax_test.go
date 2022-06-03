@@ -80,7 +80,7 @@ func TestMinimaxFullGame3rdPick(t *testing.T) {
 		RoundNumber: 3,
 		P2rounds: []P2Round{
 			{Picks: []Faction{NG, TZ}, Matchup: Matchup{P1: NG, P2: KI}},
-			{Picks: []Faction{OK, KI}, Matchup: Matchup{KH, KI}},
+			{Picks: []Faction{OK, KI}, Matchup: Matchup{P1: KH, P2: KI}},
 		},
 		P3Round:    P3Round{},
 		RoundPhase: 0,

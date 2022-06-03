@@ -1,6 +1,100 @@
-<h1>Evaluating {{.WinRate}}</h1>
+<!doctype html>
+<html lang="en">
 
-<form action="/evaluate/{{.WinRate}}" method="POST">
-    <div><textarea name="body" rows="20" cols="80">{{printf "%+v" .GameState}}</textarea></div>
-    <div><input type="submit" value="Save"></div>
-</form>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+<div class="container-fluid">
+    <h1 class="text-center">WH3 DraftBot</h1>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm">
+            <h2>Matchup Odds</h2>
+            <form action="/evaluate/" method="POST">
+                <fieldset id="matchups">
+                    {{ range $key, $value := .TournamentInfo.MatchupOdds }}
+                        <p><input id="{{$key.P1}}{{$key.P2}}" name="{{$key.P1}}-{{$key.P2}}" type="text" placeholder="{{$key.P1}}-{{$key.P2}}" value="{{$value}}"/>&nbsp<label for="{{$key.P1}}{{$key.P2}}">{{$key.P1}}-{{$key.P2}}</label></p>
+                    {{end}}
+                </fieldset>
+            </form>
+        </div>
+        <div class="col-sm">
+            <h2>Pre-Match Rules</h2>
+            <div class="row">
+                <form action="/evaluate/" method="POST">
+                    <fieldset id="gameConfig">
+                        <p><input id="rounds" name="Rounds" type="text" placeholder="3" value="3"/>&nbsp<label for="rounds">Number of Rounds</label></p>
+                        <p><input id="areYouP1" name="areYouP1" type="checkbox" value/>&nbsp<label for="areYouP1">Are You the First Picker?</label></p>
+                    </fieldset>
+                </form>
+            </div>
+            <h2>Current Match State</h2>
+            <div class="row">
+                <form>
+                    {{ range $i, $gs := .GameState.P2rounds }}
+                        <h3>Round {{$i}}</h3>
+                        <fieldset id="round-{{.Matchup}}">
+                            <div class="form-row">
+                                <div class="col form-group">
+                                    <input id="round-{{.Matchup}}-picks" type="text" value="{{index .Picks 0}} {{index .Picks 1}} "/>
+                                    <label for="round-{{.Matchup}}-picks">Picks</label>
+                                </div>
+                                <div class="col form-group">
+                                    <input id="round-{{.Matchup}}-p2pick" name="round-{{.Matchup}}-p2pick" type="text" value="{{.Matchup.P2}}"/>
+                                    <label for="round-{{.Matchup}}-p2pick">Player 2 Pick</label>
+                                </div>
+                                <div class="col form-group">
+                                    <input id="round-{{.Matchup}}-p1pick" name="round-{{.Matchup}}-p1pick" type="text" value="{{.Matchup.P1}}"/>
+                                    <label for="round-{{.Matchup}}-p1pick">Player 1 Pick</label>
+                                </div>
+                            </div>
+                        </fieldset>
+                    {{end}}
+
+                    <h3>Final Round</h3>
+                    <div class="form-row">
+                    {{ if .RenderExistingP3}}
+                        <div class="col-3 form-group">
+                            <input id="p3-picks" type="text" value="{{index .GameState.P3Round.Picks 0}} {{index .GameState.P3Round.Picks 1}} {{index .GameState.P3Round.Picks 2}}"/>
+                            <label for="p3-picks">Picks</label>
+                        </div>
+                        <div class="col-2 form-group">
+                            <input id="p3-ban" type="text" value="{{.GameState.P3Round.Ban}}"/>
+                            <label for="p3-ban">Ban</label>
+                        </div>
+                        <div class="col-2 form-group">
+                            <input id="counter-ban" type="text" value="{{.GameState.P3Round.CounterBan}}"/>
+                            <label for="counter-ban">Counter Ban</label>
+                        </div>
+                        <div class="col-2 form-group">
+                            <input id="pick" type="text" value="{{.GameState.P3Round.Matchup.P2}}"/>
+                            <label for="pick">Player 2 Pick</label>
+                        </div>
+                        <div class="col-2 form-group">
+                            <input id="final-pick" type="text" value="{{.GameState.P3Round.Matchup.P1}}"/>
+                            <label for="final-pick">Player 1 Pick</label>
+                        </div>
+                    {{ end }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <h1>Pick Evaluation</h1>
+            <div class="col-md">
+                <button type="submit" class="btn btn-primary">Evaluate</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+
+</html>

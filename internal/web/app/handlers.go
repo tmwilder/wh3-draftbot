@@ -10,8 +10,13 @@ import (
 )
 
 type pageData struct {
-	WinRate   float64
-	GameState GameState
+	WinRate          float64
+	GameState        GameState
+	TournamentInfo   TournamentInfo
+	SuggestedLine    GameState
+	RenderFreshP2    bool
+	RenderFreshP3    bool
+	RenderExistingP3 bool
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +25,26 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	err = t.Execute(w, pageData{})
+	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
+	err = t.Execute(w,
+		pageData{
+			TournamentInfo: tournamentInfo,
+			WinRate:        0.5,
+			GameState: GameState{
+				RoundNumber: 3,
+				P2rounds: []P2Round{
+					{Picks: []Faction{NG, TZ}, Matchup: Matchup{P1: NG, P2: KI}},
+					{Picks: []Faction{OK, KI}, Matchup: Matchup{P1: KH, P2: KI}}},
+				P3Round: P3Round{
+					Picks:      []Faction{NG, SL, KH},
+					Ban:        OK,
+					CounterBan: OK,
+					Matchup:    Matchup{P1: KH, P2: SL}}},
+			RenderFreshP2:    false,
+			RenderFreshP3:    false,
+			RenderExistingP3: true,
+		},
+	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -43,7 +67,7 @@ func evaluateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = t.Execute(w, pageData{WinRate: winRate, GameState: gameState})
+	err = t.Execute(w, pageData{WinRate: winRate, GameState: gameState, TournamentInfo: tournamentInfo})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
