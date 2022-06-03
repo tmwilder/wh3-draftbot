@@ -17,7 +17,7 @@
                 <fieldset id="matchups">
                     {{ range $key, $value := .TournamentInfo.MatchupOdds }}
                         <div class="form-group">
-                            <input id="{{$key.P1}}{{$key.P2}}" form="updateForm" name="{{$key.P1}}-{{$key.P2}}" type="text" placeholder="{{$key.P1}}-{{$key.P2}}" value="{{$value}}"/>
+                            <input id="{{$key.P1}}{{$key.P2}}" form="updateForm" name="odds-{{$key.P1}}{{$key.P2}}" type="text" placeholder="{{$key.P1}}-{{$key.P2}}" value="{{$value}}"/>
                             <label for="{{$key.P1}}{{$key.P2}}">{{$key.P1}}-{{$key.P2}}</label>
                         </div>
                     {{end}}
@@ -32,33 +32,33 @@
                             <input id="rounds" name="rounds" type="text" placeholder="3" value="{{.TournamentInfo.RoundCount}}"/>
                             <label for="rounds">Number of Rounds</label>
                         </div>
-                        <div class="form-group">
-                            <input id="areYouP1" name="areYouP1" type="checkbox" value/>
-                            <label for="areYouP1">Are you Player 1 for this match?</label>
-                        </div>
                     </fieldset>
             </div>
             <h2>Current Match State</h2>
             <div class="row">
-                    {{ range $i, $gs := .GameState.P2rounds }}
+                    {{ range $i, $gs := .GameState.P2Rounds }}
                         <fieldset id="round-{{.Matchup}}">
                             <div class="form-row">
                                 <div class="col form-group">
-                                    <input id="round-{{$i}}-picks" type="text" value="{{index .Picks 0}} {{index .Picks 1}}"  aria-describedby="initialPicks"/>
+                                    {{ if .Picks }}
+                                        <input id="round-{{$i}}-picks" type="text" name="picks" value="{{index .Picks 0}} {{index .Picks 1}}"  aria-describedby="initialPicks"/>
+                                    {{ else }}
+                                        <input id="round-{{$i}}-picks" type="text" name="picks" value=""  aria-describedby="initialPicks"/>
+                                    {{ end }}
                                     <label for="round-{{$i}}-picks">Picks</label>
                                     <small class="form-text text-muted" id="initialPicks">
                                         Format picks as F1 space F2, e.g. OK KI.
                                     </small>
                                 </div>
                                 <div class="col form-group">
-                                    <input id="round-{{$i}}-p2pick" name="round-{{$i}}-p2pick" type="text" value="{{.Matchup.P2}}" aria-describedby="p2Pick"/>
+                                    <input id="round-{{$i}}-p2pick" name="p2pick" type="text" value="{{.Matchup.P2}}" aria-describedby="p2Pick"/>
                                     <label for="round-{{$i}}-p2pick">Player 2 Pick</label>
                                     <small class="form-text text-muted" id="p2Pick">
                                         Player 2 is what the match's player 2 picked, regardless of whether they were first or second pick for this round.
                                     </small>
                                 </div>
                                 <div class="col form-group">
-                                    <input id="round-{{$i}}-p1pick" name="round-{{$i}}-p1pick" type="text" value="{{.Matchup.P1}}" aria-describedby="p1Pick"/>
+                                    <input id="round-{{$i}}-p1pick" name="p1pick" type="text" value="{{.Matchup.P1}}" aria-describedby="p1Pick"/>
                                     <label for="round-{{$i}}-p1pick">Player 1 Pick</label>
                                     <small class="form-text text-muted" id="p1Pick">
                                         Ditto the player 2 help.
@@ -71,31 +71,31 @@
 
                     <fieldset id="round-final">
                         <div class="form-row">
-                            {{ if .RenderNewP3}}
+                            {{ if .GameState.P3Round.Picks }}
                                 <div class="col-2 form-group">
-                                    <input id="round-final-picks" type="text" name="round-final-picks" value=""/>
+                                    <input id="round-final-picks" type="text" name="last-picks" value="{{index .GameState.P3Round.Picks 0}} {{index .GameState.P3Round.Picks 1}} {{index .GameState.P3Round.Picks 2}}"/>
                                     <label for="round-final-picks">Picks</label>
                                 </div>
                             {{ else }}
                                 <div class="col-2 form-group">
-                                    <input id="round-final-picks" type="text" name="round-final-picks" value="{{index .GameState.P3Round.Picks 0}} {{index .GameState.P3Round.Picks 1}} {{index .GameState.P3Round.Picks 2}}"/>
+                                    <input id="round-final-picks" type="text" name="last-picks" value=""/>
                                     <label for="round-final-picks">Picks</label>
                                 </div>
                             {{ end }}
                             <div class="col-2 form-group">
-                                <input id="round-final-ban" type="text" value="{{.GameState.P3Round.Ban}}"/>
+                                <input id="round-final-ban" type="text" name="last-ban" value="{{.GameState.P3Round.Ban}}"/>
                                 <label for="round-final-ban">Ban</label>
                             </div>
                             <div class="col-2 form-group">
-                                <input id="round-final-counter-ban" type="text" value="{{.GameState.P3Round.CounterBan}}" name="round-final-counter-ban"/>
+                                <input id="round-final-counter-ban" name="last-counter-ban" type="text" value="{{.GameState.P3Round.CounterBan}}"/>
                                 <label for="round-final-counter-ban">Counter Ban</label>
                             </div>
                             <div class="col-2 form-group">
-                                <input id="round-final-p2-pick" type="text" value="{{.GameState.P3Round.Matchup.P2}}" name="round-final-p2-pick"/>
+                                <input id="round-final-p2-pick" name="last-p2pick" type="text" value="{{.GameState.P3Round.Matchup.P2}}"/>
                                 <label for="round-final-p2-pick">Player 2 Pick</label>
                             </div>
                             <div class="col-2 form-group">
-                                <input id="round-final-p1-pick" type="text" value="{{.GameState.P3Round.Matchup.P1}}" name="round-final-p1-pick" />
+                                <input id="round-final-p1-pick" name="last-p1pick" type="text" value="{{.GameState.P3Round.Matchup.P1}}" />
                                 <label for="round-final-p1-pick">Player 1 Pick</label>
                             </div>
                             <div class="col-2"><h3>Final Round</h3></div>
@@ -103,9 +103,9 @@
                     </fieldset>
                     <div class="form-row">
                         <div class="col-3">
-                            <button type="submit" formaction="/view" class="btn btn-primary" aria-describedby="updateMatchStateHelp">Update Current Match State</button>
+                            <button type="submit" formaction="/view" class="btn btn-primary" aria-describedby="updateMatchStateHelp">Update Round Inputs</button>
                             <small class="form-text text-muted" id="updateMatchStateHelp">
-                                Hit this to update the match state with your latest info. Used to get a new row of regular pick rounds when catching the state up to current.
+                                Updates the number of round inputs on this page based on the configured match number of rounds above.
                             </small>
                         </div>
                         <div class="col-3">

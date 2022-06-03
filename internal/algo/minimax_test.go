@@ -47,7 +47,7 @@ func TestMinimaxFullGame5(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 5, MatchupOdds: MatchupsV1d2}
 	gameState := GameState{
 		RoundNumber: 1,
-		P2rounds:    []P2Round{},
+		P2Rounds:    []P2Round{},
 		P3Round:     P3Round{},
 		RoundPhase:  0,
 	}
@@ -62,7 +62,7 @@ func TestMinimaxFullGame52ndPick(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 5, MatchupOdds: MatchupsV1d2}
 	gameState := GameState{
 		RoundNumber: 2,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{NG, TZ}, Matchup: Matchup{P1: NG, P2: KI}},
 		},
 		P3Round:    P3Round{},
@@ -78,7 +78,7 @@ func TestMinimaxFullGame3rdPick(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 5, MatchupOdds: MatchupsV1d2}
 	gameState := GameState{
 		RoundNumber: 3,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{NG, TZ}, Matchup: Matchup{P1: NG, P2: KI}},
 			{Picks: []Faction{OK, KI}, Matchup: Matchup{P1: KH, P2: KI}},
 		},
@@ -95,7 +95,7 @@ func TestMinimaxFullGame3(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
 	gameState := GameState{
 		RoundNumber: 1,
-		P2rounds:    []P2Round{},
+		P2Rounds:    []P2Round{},
 		P3Round:     P3Round{},
 		RoundPhase:  0,
 	}
@@ -109,7 +109,7 @@ func TestMinimaxR3(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
 	gameState := GameState{
 		RoundNumber: 3,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{SL, TZ}, Matchup: Matchup{P1: TZ, P2: GC}},
 			{Picks: []Faction{KH, TZ}, Matchup: Matchup{P1: OK, P2: KH}},
 		},
@@ -127,7 +127,7 @@ func TestMinimaxR3Polarized(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: matchupsPolarized}
 	gameState := GameState{
 		RoundNumber: 1,
-		P2rounds:    []P2Round{},
+		P2Rounds:    []P2Round{},
 		P3Round:     P3Round{},
 		RoundPhase:  0,
 	}

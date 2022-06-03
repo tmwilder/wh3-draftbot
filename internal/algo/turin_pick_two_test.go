@@ -13,7 +13,7 @@ func TestGetSuccessorsP3(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
 	gameState := GameState{
 		RoundNumber: 3,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{KH, KI}, Matchup: Matchup{P1: KI, P2: KI}},
 			{Picks: []Faction{KH, TZ}, Matchup: Matchup{P1: TZ, P2: TZ}},
 		},
@@ -47,7 +47,7 @@ func TestGetSuccessorsP2Pregame(t *testing.T) {
 	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
 	gameState := GameState{
 		RoundNumber: 1,
-		P2rounds:    []P2Round{},
+		P2Rounds:    []P2Round{},
 		P3Round: P3Round{
 			Picks:      []Faction{},
 			Ban:        EMPTY,
@@ -80,7 +80,7 @@ func TestGetSuccessorsP2Pregame(t *testing.T) {
 func TestPick3Combo5thPick(t *testing.T) {
 	gameState := GameState{
 		RoundNumber: 3,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{KH, KI}, Matchup: Matchup{P1: KI, P2: KI}},
 			{Picks: []Faction{KH, TZ}, Matchup: Matchup{P1: TZ, P2: TZ}},
 			{Picks: []Faction{KH, NG}, Matchup: Matchup{P1: NG, P2: NG}},
@@ -105,7 +105,7 @@ func TestPick3Combo5thPick(t *testing.T) {
 func TestPick3Combo3rdPick(t *testing.T) {
 	gameState := GameState{
 		RoundNumber: 3,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{KH, SL}, Matchup: Matchup{P1: KH, P2: SL}},
 			{Picks: []Faction{KH, TZ}, Matchup: Matchup{P1: OK, P2: TZ}}},
 		P3Round: P3Round{},
@@ -128,7 +128,7 @@ func TestPick3Combo3rdPick(t *testing.T) {
 func TestPick2Combo1stPick(t *testing.T) {
 	gameState := GameState{
 		RoundNumber: 3,
-		P2rounds:    []P2Round{},
+		P2Rounds:    []P2Round{},
 		P3Round:     P3Round{},
 	}
 
@@ -149,7 +149,7 @@ func TestPick2Combo1stPick(t *testing.T) {
 func TestPick2Combo3rdPick(t *testing.T) {
 	gameState := GameState{
 		RoundNumber: 3,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{KH, SL}, Matchup: Matchup{P1: KH, P2: SL}},
 			{Picks: []Faction{KH, TZ}, Matchup: Matchup{P1: OK, P2: TZ}}},
 		P3Round: P3Round{},
@@ -172,7 +172,7 @@ func TestPick2Combo3rdPick(t *testing.T) {
 func TestPick2Combo4thPick(t *testing.T) {
 	gameState := GameState{
 		RoundNumber: 5,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{KH, SL}, Matchup: Matchup{P1: KH, P2: SL}},
 			{Picks: []Faction{TZ, OK}, Matchup: Matchup{P1: OK, P2: TZ}},
 			{Picks: []Faction{NG, GC}, Matchup: Matchup{P1: NG, P2: NG}}},
@@ -200,7 +200,7 @@ func TestComputeWinRateSimple(t *testing.T) {
 
 	gameState := GameState{
 		RoundNumber: 3,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{KH, SL}, Matchup: Matchup{P1: KH, P2: SL}},
 			{Picks: []Faction{KH, SL}, Matchup: Matchup{P1: KH, P2: SL}}},
 		P3Round: P3Round{
@@ -225,7 +225,7 @@ func TestComputeWinRateSimple2(t *testing.T) {
 
 	gameState := GameState{
 		RoundNumber: 3,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{KH, SL}, Matchup: Matchup{P1: KH, P2: SL}},
 			{Picks: []Faction{KH, SL}, Matchup: Matchup{P1: KH, P2: SL}}},
 		P3Round: P3Round{
@@ -253,7 +253,7 @@ func TestComputeWinRateLessSimple(t *testing.T) {
 
 	gameState := GameState{
 		RoundNumber: 3,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{KH, SL}, Matchup: Matchup{P1: KH, P2: SL}},
 			{Picks: []Faction{SL, KH}, Matchup: Matchup{P1: SL, P2: KH}}},
 		P3Round: P3Round{
@@ -284,7 +284,7 @@ func TestComputeWinRateRegression(t *testing.T) {
 
 	gameState := GameState{
 		RoundNumber: 5,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{KH, SL}, Matchup: Matchup{P1: NG, P2: NG}},
 			{Picks: []Faction{SL, KH}, Matchup: Matchup{P1: TZ, P2: TZ}},
 			{Picks: []Faction{SL, KH}, Matchup: Matchup{P1: KH, P2: KH}},
@@ -308,7 +308,7 @@ func TestComputeWinRateRegression(t *testing.T) {
 func TestDeepCopy(t *testing.T) {
 	gameState := GameState{
 		RoundNumber: 3,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{KH, SL}, Matchup: Matchup{P1: KH, P2: SL}},
 			{Picks: []Faction{SL, KH}, Matchup: Matchup{P1: SL, P2: KH}}},
 		P3Round: P3Round{
@@ -319,16 +319,16 @@ func TestDeepCopy(t *testing.T) {
 	}
 	gameStateCopy := deepcopy(gameState)
 
-	if !(gameStateCopy.P2rounds[0].Matchup == gameState.P2rounds[0].Matchup) {
+	if !(gameStateCopy.P2Rounds[0].Matchup == gameState.P2Rounds[0].Matchup) {
 		t.Errorf(fmt.Sprint("Cloned matchups not equal, failing."))
 	}
-	gameStateCopy.P2rounds[0].Matchup.P1 = OK
-	if gameStateCopy.P2rounds[0].Matchup == gameState.P2rounds[0].Matchup {
+	gameStateCopy.P2Rounds[0].Matchup.P1 = OK
+	if gameStateCopy.P2Rounds[0].Matchup == gameState.P2Rounds[0].Matchup {
 		t.Errorf(fmt.Sprint("Setting copy values impacted the non-copy, failing."))
 	}
 
-	gameState.P2rounds[0].Matchup.P2 = KH
-	if gameStateCopy.P2rounds[0].Matchup.P2 == KH {
+	gameState.P2Rounds[0].Matchup.P2 = KH
+	if gameStateCopy.P2Rounds[0].Matchup.P2 == KH {
 		t.Errorf(fmt.Sprint("Setting uncopied values impacted the original, failing."))
 	}
 }
@@ -339,7 +339,7 @@ We were computing the wrong odds. Add that scenario.
 func TestComputeWinrateRegression(t *testing.T) {
 	gameState := GameState{
 		RoundNumber: 3,
-		P2rounds: []P2Round{
+		P2Rounds: []P2Round{
 			{Picks: []Faction{}, Matchup: Matchup{P1: TZ, P2: GC}},
 			{Picks: []Faction{}, Matchup: Matchup{P1: KH, P2: KH}}},
 		P3Round: P3Round{
