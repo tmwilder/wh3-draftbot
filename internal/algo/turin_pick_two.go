@@ -7,8 +7,10 @@ import (
 )
 
 type P2Round struct {
-	Picks   []common.Faction
-	Matchup common.Matchup
+	Picks       []common.Faction
+	Matchup     common.Matchup
+	CounterPick common.Faction
+	FinalPick   common.Faction
 }
 
 type P3Round struct {

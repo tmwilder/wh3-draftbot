@@ -12,7 +12,7 @@
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-sm">
+        <div class="col-4">
             <h2>Matchup Odds</h2>
             <form action="/evaluate/" method="POST">
                 <fieldset id="matchups">
@@ -22,7 +22,7 @@
                 </fieldset>
             </form>
         </div>
-        <div class="col-sm">
+        <div class="col-5">
             <h2>Pre-Match Rules</h2>
             <div class="row">
                 <form action="/evaluate/" method="POST">
@@ -58,8 +58,8 @@
                     <h3>Final Round</h3>
                     <div class="form-row">
                     {{ if .RenderExistingP3}}
-                        <div class="col-3 form-group">
-                            <input id="p3-picks" type="text" value="{{index .GameState.P3Round.Picks 0}} {{index .GameState.P3Round.Picks 1}} {{index .GameState.P3Round.Picks 2}}"/>
+                        <div class="col-2 form-group">
+                            <input id="p3-picks" type="text" name="p3-picks" value="{{index .GameState.P3Round.Picks 0}} {{index .GameState.P3Round.Picks 1}} {{index .GameState.P3Round.Picks 2}}"/>
                             <label for="p3-picks">Picks</label>
                         </div>
                         <div class="col-2 form-group">
@@ -85,7 +85,7 @@
         </div>
         <div class="row">
             <h1>Pick Evaluation</h1>
-            <div class="col-md">
+            <div class="col-3">
                 <button type="submit" class="btn btn-primary">Evaluate</button>
             </div>
         </div>
