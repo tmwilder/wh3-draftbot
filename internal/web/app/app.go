@@ -1,12 +1,17 @@
 package app
 
 import (
-	"log"
-	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
 func App() {
-	http.HandleFunc("/view/", viewHandler)
-	http.HandleFunc("/recommend/", recommendHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	r := gin.Default()
+	r.GET("/view", viewHandler)
+	r.GET("/recommend/", recommendHandler)
+	r.LoadHTMLGlob("internal/web/template/*")
+
+	err := r.Run()
+	if err != nil {
+		panic("Could not start web server: " + err.Error())
+	}
 }
