@@ -11,10 +11,11 @@ import (
 )
 
 type pageData struct {
-	WinRate        float64
-	GameState      GameState
-	TournamentInfo TournamentInfo
-	SuggestedLine  GameState
+	GameState            GameState
+	TournamentInfo       TournamentInfo
+	SuggestedLine        GameState
+	WinRate              float64
+	RecommendedGameState GameState
 }
 
 func viewHandler(c *gin.Context) {
@@ -28,18 +29,21 @@ func viewHandler(c *gin.Context) {
 }
 
 func recommendHandler(c *gin.Context) {
-	// Parse later
-	tournamentInfo := TournamentInfo{RoundCount: 3, MatchupOdds: MatchupsV1d2}
-	gameState := GameState{
-		RoundNumber: 2,
-		P2Rounds:    []P2Round{{Picks: []Faction{NG, TZ}, Matchup: Matchup{P1: NG, P2: KI}}},
-		P3Round:     P3Round{},
-	}
-	winRate, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
+	tournamentInfo, gameState := parseInputs(c)
+	winRate, recommendedGameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
+	paddedTournamentInfo, paddedGameState := applyDefaults(tournamentInfo, gameState)
 
-	c.HTML(http.StatusOK, "draftbot.html", pageData{WinRate: winRate, GameState: gameState, TournamentInfo: tournamentInfo})
+	c.HTML(http.StatusOK, "draftbot.html", pageData{
+		GameState:            paddedGameState,
+		TournamentInfo:       paddedTournamentInfo,
+		WinRate:              winRate,
+		RecommendedGameState: recommendedGameState,
+	})
 }
 
+/**
+Nothing to see here.
+*/
 func parseInputs(c *gin.Context) (TournamentInfo, GameState) {
 	queryParams := c.Request.URL.Query()
 	// Extract matchup odds
@@ -99,17 +103,59 @@ func parseInputs(c *gin.Context) (TournamentInfo, GameState) {
 	p3Round.Matchup.P1 = Faction(c.Query("last-p1pick"))
 	p3Round.Matchup.P2 = Faction(c.Query("last-p2pick"))
 
-	roundNumber := len(p2Rounds)
-	// TODO scrutiny here - maybe move to re-usable fn
-	roundPhase := 0
-	//if p2Rounds[len(p2Rounds)-1].Matchup.P2 != EMPTY && p2Rounds[len(p2Rounds)-1].Matchup.P1 != EMPTY {
-	//	roundPhase = 2
-	//} else if p2Rounds[len(p2Rounds)-1].Matchup.P2 != EMPTY || p2Rounds[len(p2Rounds)-1].Matchup.P1 != EMPTY {
-	//	roundPhase = 1
-	//}
+	// Need to interpret game round number, game round phase, who the maximizing player is next
+	startedRound3 := len(p3Round.Picks) != 0
+	var gameRound int
+	var roundPhase int
+
+	if startedRound3 {
+		gameRound = tournamentInfo.RoundCount
+		// TODO change when we go probabilistic on the r4-5 hop
+		// Assume p1 picks first r5 now
+		isP1Pick := true
+		if isP1Pick {
+			if p3Round.Matchup.P1 != EMPTY {
+				roundPhase = 2
+			} else if p3Round.Matchup.P2 != EMPTY {
+				roundPhase = 1
+			} else {
+				roundPhase = 0
+			}
+		} else {
+			if p3Round.Matchup.P2 != EMPTY {
+				roundPhase = 2
+			} else if p3Round.Matchup.P1 != EMPTY {
+				roundPhase = 1
+			} else {
+				roundPhase = 0
+			}
+		}
+	} else {
+		gameRound = len(p2Rounds)
+		currentRound := p2Rounds[len(p2Rounds)-1]
+		isP1Pick := gameRound%2 == 1
+		if isP1Pick {
+			if currentRound.Matchup.P1 != EMPTY {
+				roundPhase = 2
+			} else if currentRound.Matchup.P2 != EMPTY {
+				roundPhase = 1
+			} else {
+				roundPhase = 0
+			}
+		} else {
+			if currentRound.Matchup.P2 != EMPTY {
+				roundPhase = 2
+			} else if currentRound.Matchup.P1 != EMPTY {
+				roundPhase = 1
+			} else {
+				roundPhase = 0
+			}
+		}
+	}
+	// TODO need maximizing player read
 
 	gameState := GameState{
-		RoundNumber: roundNumber,
+		RoundNumber: gameRound,
 		P2Rounds:    p2Rounds,
 		P3Round:     p3Round,
 		RoundPhase:  roundPhase,

@@ -27,12 +27,20 @@
             <form id="updateForm">
             <h2>Pre-Match Rules</h2>
             <div class="row">
-                    <fieldset id="gameConfig">
-                        <div class="form-group">
-                            <input id="rounds" name="rounds" type="text" placeholder="3" value="{{.TournamentInfo.RoundCount}}"/>
-                            <label for="rounds">Number of Rounds</label>
-                        </div>
-                    </fieldset>
+                    <div class="col-2">
+                        <fieldset id="gameConfig">
+                            <div class="form-group">
+                                <input id="rounds" name="rounds" type="text" placeholder="3" value="{{.TournamentInfo.RoundCount}}"/>
+                                <label for="rounds">Number of Rounds</label>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="col-3">
+                        <button type="submit" formaction="/view" class="btn btn-primary" aria-describedby="updateMatchStateHelp">Update Round Inputs</button>
+                        <small class="form-text text-muted" id="updateMatchStateHelp">
+                            Updates the number of round inputs to your Number of Rounds.
+                        </small>
+                    </div>
             </div>
             <h2>Current Match State</h2>
             <div class="row">
@@ -102,13 +110,7 @@
                         </div>
                     </fieldset>
                     <div class="form-row">
-                        <div class="col-3">
-                            <button type="submit" formaction="/view" class="btn btn-primary" aria-describedby="updateMatchStateHelp">Update Round Inputs</button>
-                            <small class="form-text text-muted" id="updateMatchStateHelp">
-                                Updates the number of round inputs on this page based on the configured match number of rounds above.
-                            </small>
-                        </div>
-                        <div class="col-3">
+                        <div class="col-12">
                             <button type="submit" formaction="/recommend" class="btn btn-primary" aria-describedby="recommendHelp">Get Recommendation</button>
                             <small class="form-text text-muted" id="recommendHelp">
                                 Generates a recommendation for the next move based on the current game state.
@@ -118,6 +120,7 @@
                 </div>
                 <div class="form-row">
                     <h1> Recommendation </h1>
+                    {{.RecommendedGameState}}
                 </div>
             </form>
         </div>
