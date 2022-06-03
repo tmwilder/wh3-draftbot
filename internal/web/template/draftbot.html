@@ -29,7 +29,7 @@
             <div class="row">
                     <fieldset id="gameConfig">
                         <div class="form-group">
-                            <input id="rounds" name="Rounds" type="text" placeholder="3" value="3"/>
+                            <input id="rounds" name="rounds" type="text" placeholder="3" value="{{.TournamentInfo.RoundCount}}"/>
                             <label for="rounds">Number of Rounds</label>
                         </div>
                         <div class="form-group">
@@ -44,7 +44,7 @@
                         <fieldset id="round-{{.Matchup}}">
                             <div class="form-row">
                                 <div class="col form-group">
-                                    <input id="round-{{$i}}-picks" type="text" value="{{index .Picks 0}} {{index .Picks 1}} "  aria-describedby="initialPicks"/>
+                                    <input id="round-{{$i}}-picks" type="text" value="{{index .Picks 0}} {{index .Picks 1}}"  aria-describedby="initialPicks"/>
                                     <label for="round-{{$i}}-picks">Picks</label>
                                     <small class="form-text text-muted" id="initialPicks">
                                         Format picks as F1 space F2, e.g. OK KI.
@@ -69,42 +69,19 @@
                         </fieldset>
                     {{end}}
 
-                    {{ if .RenderNewP2}}
-                        <fieldset id="round-next">
-                            <div class="form-row">
-                                <div class="col form-group">
-                                    <input id="round-next-picks" type="text" value="" aria-describedby="initialPicks" name="round-next-picks"/>
-                                    <label for="round-next-picks">Picks</label>
-                                    <small class="form-text text-muted" id="initialPicks">
-                                        Format picks as F1 space F2, e.g. OK KI.
-                                    </small>
-                                </div>
-                                <div class="col form-group">
-                                    <input id="round-next-p2pick" name="round-next-p2pick" type="text" aria-describedby="p2Pick"/>
-                                    <label for="round-next-p2pick">Player 2 Pick</label>
-                                    <small class="form-text text-muted" id="p2Pick">
-                                        Player 2 is what the match's player 2 picked, regardless of whether they were first or second pick for this round.
-                                    </small>
-                                </div>
-                                <div class="col form-group">
-                                    <input id="round-next-p1pick" name="round-next-p1pick" type="text" aria-describedby="p1Pick"/>
-                                    <label for="round-next-p1pick">Player 1 Pick</label>
-                                    <small class="form-text text-muted" id="p1Pick">
-                                        Ditto the player 2 help.
-                                    </small>
-                                </div>
-                                <div class="col-2"><h3>Next Round</h3></div>
-                            </div>
-                        </fieldset>
-                    {{ end }}
-
                     <fieldset id="round-final">
                         <div class="form-row">
-                        {{ if .RenderExistingP3}}
-                            <div class="col-2 form-group">
-                                <input id="round-final-picks" type="text" name="round-final-picks" value="{{index .GameState.P3Round.Picks 0}} {{index .GameState.P3Round.Picks 1}} {{index .GameState.P3Round.Picks 2}}"/>
-                                <label for="round-final-picks">Picks</label>
-                            </div>
+                            {{ if .RenderNewP3}}
+                                <div class="col-2 form-group">
+                                    <input id="round-final-picks" type="text" name="round-final-picks" value=""/>
+                                    <label for="round-final-picks">Picks</label>
+                                </div>
+                            {{ else }}
+                                <div class="col-2 form-group">
+                                    <input id="round-final-picks" type="text" name="round-final-picks" value="{{index .GameState.P3Round.Picks 0}} {{index .GameState.P3Round.Picks 1}} {{index .GameState.P3Round.Picks 2}}"/>
+                                    <label for="round-final-picks">Picks</label>
+                                </div>
+                            {{ end }}
                             <div class="col-2 form-group">
                                 <input id="round-final-ban" type="text" value="{{.GameState.P3Round.Ban}}"/>
                                 <label for="round-final-ban">Ban</label>
@@ -122,31 +99,6 @@
                                 <label for="round-final-p1-pick">Player 1 Pick</label>
                             </div>
                             <div class="col-2"><h3>Final Round</h3></div>
-                        {{ end }}
-
-                        {{ if .RenderNewP3}}
-                            <div class="col-2 form-group">
-                                <input id="round-final-picks" type="text" name="round-final-picks" value=""/>
-                                <label for="round-final-picks">Picks</label>
-                            </div>
-                            <div class="col-2 form-group">
-                                <input id="round-final-ban" type="text" name="round-final-ban" value=""/>
-                                <label for="round-final-ban">Ban</label>
-                            </div>
-                            <div class="col-2 form-group">
-                                <input id="round-final-counter-ban" type="text" name="round-final-counter-ban" value=""/>
-                                <label for="round-final-counter-ban">Counter Ban</label>
-                            </div>
-                            <div class="col-2 form-group">
-                                <input id="round-final-counter-pick" type="text" name="round-final-counter-pick" value=""/>
-                                <label for="round-final-counter-pick">Player 2 Pick</label>
-                            </div>
-                            <div class="col-2 form-group">
-                                <input id="round-final-pick" type="text" name="round-final-pick" value=""/>
-                                <label for="round-final-pick">Player 1 Pick</label>
-                            </div>
-                            <div class="col-2"><h3>Final Round</h3></div>
-                        {{ end }}
                         </div>
                     </fieldset>
                     <div class="form-row">
@@ -163,7 +115,10 @@
                             </small>
                         </div>
                     </div>
-            </div>
+                </div>
+                <div class="form-row">
+                    <h1> Recommendation </h1>
+                </div>
             </form>
         </div>
     </div>
