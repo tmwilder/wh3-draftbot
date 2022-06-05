@@ -15,7 +15,6 @@ func TurinMinimax(tournamentInfo TournamentInfo, gameState GameState, isMaximizi
 		var bestGameState GameState
 		successors := getSuccessors(tournamentInfo, gameState)
 		for _, v := range successors {
-			isMaximizingPlayer = false
 			value, candidateGameState := TurinMinimax(tournamentInfo, v, false, alpha, beta)
 
 			if value > bestVal {
@@ -34,13 +33,13 @@ func TurinMinimax(tournamentInfo TournamentInfo, gameState GameState, isMaximizi
 		var bestGameState GameState
 		successors := getSuccessors(tournamentInfo, gameState)
 		for _, v := range successors {
-			isMaximizingPlayer = true
-			if finalRoundIsNext(tournamentInfo, gameState) && whoWonTheLastRound(gameState) == P2 {
+			isMaximizingPlayerNext := true
+			if finalRoundIsNext(tournamentInfo, v) && whoWonTheLastRound(v) == P2 {
 				// If it's the round before last and P2 just won, p2 goes again.
 				// This only happens for p2 because 2nd to last round is always even.
-				isMaximizingPlayer = false
+				isMaximizingPlayerNext = false
 			}
-			value, candidateGameState := TurinMinimax(tournamentInfo, v, isMaximizingPlayer, alpha, beta)
+			value, candidateGameState := TurinMinimax(tournamentInfo, v, isMaximizingPlayerNext, alpha, beta)
 
 			if value < bestVal {
 				bestGameState = candidateGameState
@@ -49,7 +48,7 @@ func TurinMinimax(tournamentInfo TournamentInfo, gameState GameState, isMaximizi
 			bestVal = math.Min(bestVal, value)
 			beta = math.Min(beta, bestVal)
 			if beta <= alpha {
-				if isMaximizingPlayer == false {
+				if isMaximizingPlayerNext == false {
 					// Don't alpha/beta prune if we're taking two turns in a row because it's the second to last round.
 					continue
 				}
@@ -66,7 +65,7 @@ func draftIsComplete(tournamentInfo TournamentInfo, gameState GameState) bool {
 }
 
 func finalRoundIsNext(tournamentInfo TournamentInfo, gameState GameState) bool {
-	return len(gameState.P2Rounds) == tournamentInfo.RoundCount-1 && len(gameState.P3Round.Picks) == 0
+	return (len(gameState.P2Rounds) == tournamentInfo.RoundCount-1) && (len(gameState.P3Round.Picks) == 0)
 }
 
 func whoWonTheLastRound(gameState GameState) WhoWon {

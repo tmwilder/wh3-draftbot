@@ -4,6 +4,7 @@ import (
 	"fmt"
 	. "github.com/tmwilder/wh3-draftbot/internal/common"
 	"math"
+	"reflect"
 	"testing"
 )
 
@@ -124,10 +125,28 @@ func TestMinimaxR3P2Wins(t *testing.T) {
 		P3Round: P3Round{},
 	}
 
-	value, gameState := TurinMinimax(tournamentInfo, gameState, false, -1.0, 2.0)
+	winRate, gameState := TurinMinimax(tournamentInfo, gameState, false, -1.0, 2.0)
 
-	fmt.Printf("%f\n", value)
-	fmt.Printf("%+v\n", gameState)
+	expectedGameState := GameState{
+		P2Rounds: []P2Round{
+			{Picks: []Faction{GC, TZ}, Matchup: Matchup{P1: GC, P2: GC}, WhoWon: P1},
+			{Picks: []Faction{KH, TZ}, Matchup: Matchup{P1: KH, P2: KI}, WhoWon: P2},
+		},
+		P3Round: P3Round{
+			Picks:      []Faction{KH, NG, TZ},
+			Ban:        KI,
+			CounterBan: KH,
+			Matchup:    Matchup{P1: TZ, P2: TZ},
+		},
+	}
+	if !(reflect.DeepEqual(expectedGameState, gameState)) {
+		t.Errorf("Expected %+v but got %+v", expectedGameState, gameState)
+	}
+
+	expected := .5
+	if !(math.Abs(winRate-expected) < epsilon) {
+		t.Errorf("Expected WR to be %f but it was %f", expected, winRate)
+	}
 }
 
 func TestMinimaxR3Polarized(t *testing.T) {
@@ -139,16 +158,20 @@ func TestMinimaxR3Polarized(t *testing.T) {
 
 	winRate, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
 
-	if !(gameState.P2Rounds[0].Matchup == Matchup{P1: GC, P2: GC}) {
-		t.Errorf("First matchup was not the expected GC GC")
+	expectedGameState := GameState{
+		P2Rounds: []P2Round{
+			{Picks: []Faction{GC, KH}, Matchup: Matchup{P1: GC, P2: GC}, WhoWon: NoOneYet},
+			{Picks: []Faction{KH, KI}, Matchup: Matchup{P1: KH, P2: KH}, WhoWon: NoOneYet},
+		},
+		P3Round: P3Round{
+			Picks:      []Faction{KI, NG, OK},
+			Ban:        KI,
+			CounterBan: KI,
+			Matchup:    Matchup{P1: NG, P2: NG},
+		},
 	}
-
-	if !(gameState.P2Rounds[1].Matchup == Matchup{P1: KH, P2: KH}) {
-		t.Errorf("First matchup was not the expected KH KH")
-	}
-
-	if !(gameState.P3Round.Matchup == Matchup{P1: NG, P2: NG}) {
-		t.Errorf("First matchup was not the expected NG NG")
+	if !(reflect.DeepEqual(expectedGameState, gameState)) {
+		t.Errorf("Expected %+v but got %+v", expectedGameState, gameState)
 	}
 
 	expected := .5

@@ -20,9 +20,8 @@ type P3Round struct {
 }
 
 type GameState struct {
-	RoundNumber int
-	P2Rounds    []P2Round
-	P3Round     P3Round
+	P2Rounds []P2Round
+	P3Round  P3Round
 }
 
 type resultAndOdds struct {
