@@ -51,11 +51,16 @@ func getSuccessorsP2(previousGameState GameState) []GameState {
 	var successors []GameState
 
 	isP1Pick := previousGameState.RoundNumber%2 == 1
-	currentRound := previousGameState.P2Rounds[previousGameState.RoundNumber-1]
-	roundPhase := getP2RoundPhase(currentRound, isP1Pick)
+	var lastRoundsPhase int
+	if len(previousGameState.P2Rounds) > 0 {
+		currentRound := previousGameState.P2Rounds[len(previousGameState.P2Rounds)-1]
+		lastRoundsPhase = getP2RoundPhase(currentRound, isP1Pick)
+	} else {
+		lastRoundsPhase = -1
+	}
 
-	switch roundPhase {
-	case 0:
+	switch lastRoundsPhase {
+	case -1, 2:
 		pickCombos := getTwoCombos(previousGameState, isP1Pick)
 		for _, v := range pickCombos {
 			newGameState := deepcopy(previousGameState)
@@ -64,7 +69,7 @@ func getSuccessorsP2(previousGameState GameState) []GameState {
 			successors = append(successors, newGameState)
 		}
 		return successors
-	case 1:
+	case 0:
 		remainingPicks := getRemainingPicks(previousGameState, !isP1Pick)
 		for _, v := range remainingPicks {
 			newGameState := deepcopy(previousGameState)
@@ -78,8 +83,9 @@ func getSuccessorsP2(previousGameState GameState) []GameState {
 			successors = append(successors, newGameState)
 		}
 		return successors
-	case 2:
+	case 1:
 		// We're on final pick if not the above two
+		currentRound := previousGameState.P2Rounds[len(previousGameState.P2Rounds)-1]
 		for _, v := range currentRound.Picks {
 			newGameState := deepcopy(previousGameState)
 			if isP1Pick {
@@ -92,7 +98,7 @@ func getSuccessorsP2(previousGameState GameState) []GameState {
 		}
 		return successors
 	default:
-		panic(fmt.Sprintf("Illegal round phase: %d", roundPhase))
+		panic(fmt.Sprintf("Illegal round phase: %d", lastRoundsPhase))
 	}
 }
 
@@ -111,7 +117,7 @@ func getSuccessorsP3(previousGameState GameState, isP1Pick bool) []GameState {
 	var successors []GameState
 
 	switch roundPhase {
-	case 0:
+	case -1:
 		pickCombos := getThreeCombos(previousGameState, isP1Pick)
 		for _, initialPicks := range pickCombos {
 			newGameState := deepcopy(previousGameState)
@@ -133,7 +139,7 @@ func getSuccessorsP3(previousGameState GameState, isP1Pick bool) []GameState {
 			}
 		}
 		return successors
-	case 1:
+	case 0:
 		counterBans := previousGameState.P3Round.Picks
 		for _, counterBan := range counterBans {
 			remainingPicks := getRemainingPicks(previousGameState, !isP1Pick)
@@ -153,7 +159,7 @@ func getSuccessorsP3(previousGameState GameState, isP1Pick bool) []GameState {
 			}
 		}
 		return successors
-	case 2:
+	case 1:
 		// We're on final pick if not the above two
 		for _, v := range previousGameState.P3Round.Picks {
 			if v == previousGameState.P3Round.CounterBan {
@@ -355,16 +361,20 @@ func getP3RoundPhase(currentRound P3Round, isP1Pick bool) int {
 			roundPhase = 2
 		} else if currentRound.Matchup.P2 != EMPTY {
 			roundPhase = 1
-		} else {
+		} else if currentRound.Ban != EMPTY {
 			roundPhase = 0
+		} else {
+			roundPhase = -1
 		}
 	} else {
 		if currentRound.Matchup.P2 != EMPTY {
 			roundPhase = 2
 		} else if currentRound.Matchup.P1 != EMPTY {
 			roundPhase = 1
-		} else {
+		} else if currentRound.Ban != EMPTY {
 			roundPhase = 0
+		} else {
+			roundPhase = -1
 		}
 	}
 	return roundPhase
@@ -377,16 +387,20 @@ func getP2RoundPhase(currentRound P2Round, isP1Pick bool) int {
 			roundPhase = 2
 		} else if currentRound.Matchup.P2 != EMPTY {
 			roundPhase = 1
-		} else {
+		} else if len(currentRound.Picks) == 2 {
 			roundPhase = 0
+		} else {
+			roundPhase = -1
 		}
 	} else {
 		if currentRound.Matchup.P2 != EMPTY {
 			roundPhase = 2
 		} else if currentRound.Matchup.P1 != EMPTY {
 			roundPhase = 1
-		} else {
+		} else if len(currentRound.Picks) == 2 {
 			roundPhase = 0
+		} else {
+			roundPhase = -1
 		}
 	}
 	return roundPhase

@@ -15,6 +15,7 @@ type pageData struct {
 	TournamentInfo       TournamentInfo
 	SuggestedLine        GameState
 	WinRate              float64
+	RenderRec            bool
 	RecommendedGameState GameState
 }
 
@@ -25,6 +26,7 @@ func viewHandler(c *gin.Context) {
 		TournamentInfo: tournamentInfo,
 		WinRate:        0.0,
 		GameState:      gameState,
+		RenderRec:      false,
 	}
 	c.HTML(http.StatusOK, "draftbot.html", pageData)
 }
@@ -39,6 +41,7 @@ func recommendHandler(c *gin.Context) {
 		TournamentInfo:       paddedTournamentInfo,
 		WinRate:              winRate,
 		RecommendedGameState: recommendedGameState,
+		RenderRec:            true,
 	})
 }
 
@@ -59,6 +62,12 @@ func parseInputs(c *gin.Context) (TournamentInfo, GameState, bool) {
 				panic("Cannot parse input: " + err.Error())
 			}
 			matchupOdds[Matchup{P1: f1, P2: f2}] = odds
+		}
+	}
+
+	for k, v := range MatchupsV1d2 {
+		if _, ok := matchupOdds[k]; !ok {
+			matchupOdds[k] = v
 		}
 	}
 
