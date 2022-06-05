@@ -20,7 +20,7 @@ type pageData struct {
 }
 
 func viewHandler(c *gin.Context) {
-	tournamentInfo, gameState, _ := parseInputs(c)
+	tournamentInfo, gameState := parseInputs(c)
 	tournamentInfo, gameState = applyDefaults(tournamentInfo, gameState)
 	pageData := pageData{
 		TournamentInfo: tournamentInfo,
@@ -32,7 +32,7 @@ func viewHandler(c *gin.Context) {
 }
 
 func recommendHandler(c *gin.Context) {
-	tournamentInfo, gameState, _ := parseInputs(c)
+	tournamentInfo, gameState := parseInputs(c)
 	winRate, recommendedGameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
 	paddedTournamentInfo, paddedGameState := applyDefaults(tournamentInfo, gameState)
 
@@ -48,7 +48,7 @@ func recommendHandler(c *gin.Context) {
 /**
 Nothing to see here.
 */
-func parseInputs(c *gin.Context) (TournamentInfo, GameState, bool) {
+func parseInputs(c *gin.Context) (TournamentInfo, GameState) {
 	queryParams := c.Request.URL.Query()
 	// Extract matchup odds
 	// We'll do it the gross way so we can remember life without tools ;)
@@ -118,11 +118,7 @@ func parseInputs(c *gin.Context) (TournamentInfo, GameState, bool) {
 		P3Round:  p3Round,
 	}
 
-	roundNumber, _, isP1Pick := InterpretRoundInfo(gameState, tournamentInfo)
-
-	gameState.RoundNumber = roundNumber
-
-	return tournamentInfo, gameState, isP1Pick
+	return tournamentInfo, gameState
 }
 
 func parsePicks(factionStr string) []Faction {

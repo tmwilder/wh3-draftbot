@@ -9,6 +9,7 @@ import (
 type P2Round struct {
 	Picks   []Faction
 	Matchup Matchup
+	WhoWon  WhoWon
 }
 
 type P3Round struct {
@@ -30,11 +31,13 @@ type resultAndOdds struct {
 }
 
 func getSuccessors(tournamentInfo TournamentInfo, previousGameState GameState) []GameState {
-	if previousGameState.RoundNumber < tournamentInfo.RoundCount {
-		return getSuccessorsP2(previousGameState)
+	isFinalRound := len(previousGameState.P2Rounds) == tournamentInfo.RoundCount-1 &&
+		previousGameState.P2Rounds[len(previousGameState.P2Rounds)-1].Matchup.P1 != EMPTY &&
+		previousGameState.P2Rounds[len(previousGameState.P2Rounds)-1].Matchup.P2 != EMPTY
+	if isFinalRound {
+		return getSuccessorsP3(previousGameState)
 	} else {
-		// TODO swap this to a probabilistic handler in the recursive routine + by forking here by _both_ first and second pick and and assigning odds weighting in the caller
-		return getSuccessorsP3(previousGameState, true)
+		return getSuccessorsP2(previousGameState)
 	}
 }
 
@@ -50,7 +53,7 @@ We also need to determine what factions remain for each player if we are in 1 or
 func getSuccessorsP2(previousGameState GameState) []GameState {
 	var successors []GameState
 
-	isP1Pick := previousGameState.RoundNumber%2 == 1
+	isP1Pick := len(previousGameState.P2Rounds)%2 == 1
 	var lastRoundsPhase int
 	if len(previousGameState.P2Rounds) > 0 {
 		currentRound := previousGameState.P2Rounds[len(previousGameState.P2Rounds)-1]
@@ -65,7 +68,7 @@ func getSuccessorsP2(previousGameState GameState) []GameState {
 		for _, v := range pickCombos {
 			newGameState := deepcopy(previousGameState)
 			newGameState.P2Rounds = append(newGameState.P2Rounds, P2Round{})
-			newGameState.P2Rounds[previousGameState.RoundNumber-1].Picks = v
+			newGameState.P2Rounds[len(newGameState.P2Rounds)-1].Picks = v
 			successors = append(successors, newGameState)
 		}
 		return successors
@@ -75,10 +78,10 @@ func getSuccessorsP2(previousGameState GameState) []GameState {
 			newGameState := deepcopy(previousGameState)
 			if isP1Pick {
 				// If it is p1 pick, p2 is _counterpicking_
-				newGameState.P2Rounds[previousGameState.RoundNumber-1].Matchup.P2 = v
+				newGameState.P2Rounds[len(newGameState.P2Rounds)-1].Matchup.P2 = v
 			} else {
 				// Otherwise p1 is counterpicking
-				newGameState.P2Rounds[previousGameState.RoundNumber-1].Matchup.P1 = v
+				newGameState.P2Rounds[len(newGameState.P2Rounds)-1].Matchup.P1 = v
 			}
 			successors = append(successors, newGameState)
 		}
@@ -89,13 +92,13 @@ func getSuccessorsP2(previousGameState GameState) []GameState {
 		for _, v := range currentRound.Picks {
 			newGameState := deepcopy(previousGameState)
 			if isP1Pick {
-				newGameState.P2Rounds[previousGameState.RoundNumber-1].Matchup.P1 = v
+				newGameState.P2Rounds[len(newGameState.P2Rounds)-1].Matchup.P1 = v
 			} else {
-				newGameState.P2Rounds[previousGameState.RoundNumber-1].Matchup.P2 = v
+				newGameState.P2Rounds[len(newGameState.P2Rounds)-1].Matchup.P2 = v
 			}
-			newGameState.RoundNumber += 1
 			successors = append(successors, newGameState)
 		}
+		// Detect if it is the last p2 round, and if so double the successors for winning/losing
 		return successors
 	default:
 		panic(fmt.Sprintf("Illegal round phase: %d", lastRoundsPhase))
@@ -111,7 +114,9 @@ There are 3 cases:
 We also must figure out who is picking first, p1 or p2 from gamestate.
 We also need to determine what factions remain for each player in 1 or 3.
 */
-func getSuccessorsP3(previousGameState GameState, isP1Pick bool) []GameState {
+func getSuccessorsP3(previousGameState GameState) []GameState {
+	isP1Pick := previousGameState.P2Rounds[len(previousGameState.P2Rounds)-1].WhoWon != P2
+
 	roundPhase := getP3RoundPhase(previousGameState.P3Round, isP1Pick)
 
 	var successors []GameState
@@ -244,9 +249,8 @@ func deepcopy(state GameState) GameState {
 		p3RoundMatchup}
 
 	return GameState{
-		RoundNumber: state.RoundNumber,
-		P2Rounds:    p2Rounds,
-		P3Round:     p3RoundCopy,
+		P2Rounds: p2Rounds,
+		P3Round:  p3RoundCopy,
 	}
 }
 
@@ -338,7 +342,6 @@ func InterpretRoundInfo(gameState GameState, tournamentInfo TournamentInfo) (int
 
 	if startedRound3 {
 		gameRound = tournamentInfo.RoundCount
-
 	} else {
 		gameRound = len(p2Rounds)
 		if gameRound == 0 {
@@ -353,8 +356,6 @@ func InterpretRoundInfo(gameState GameState, tournamentInfo TournamentInfo) (int
 }
 
 func getP3RoundPhase(currentRound P3Round, isP1Pick bool) int {
-	// TODO change when we go probabilistic on the r4-5 hop
-	// Assume p1 picks first r5 now
 	var roundPhase int
 	if isP1Pick {
 		if currentRound.Matchup.P1 != EMPTY {

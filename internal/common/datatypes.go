@@ -29,6 +29,14 @@ type Matchup struct {
 	P2 Faction
 }
 
+type WhoWon string
+
+const (
+	P1       WhoWon = "P1"
+	P2              = "P2"
+	NoOneYet        = ""
+)
+
 type TournamentInfo struct {
 	RoundCount  int
 	MatchupOdds map[Matchup]float64
@@ -48,7 +56,7 @@ var MatchupsV1d2 = map[Matchup]float64{
 
 	Matchup{KH, KH}: .5,
 	Matchup{KH, KI}: .5,
-	Matchup{KH, NG}: .3,
+	Matchup{KH, NG}: .4,
 	Matchup{KH, OK}: .6,
 	Matchup{KH, SL}: .65,
 	Matchup{KH, TZ}: .35,

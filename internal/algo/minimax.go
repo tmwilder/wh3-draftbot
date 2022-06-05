@@ -6,9 +6,7 @@ import (
 )
 
 func TurinMinimax(tournamentInfo TournamentInfo, gameState GameState, isMaximizingPlayer bool, alpha float64, beta float64) (float64, GameState) {
-	draftIsComplete := (gameState.RoundNumber == tournamentInfo.RoundCount) &&
-		(gameState.P3Round.Matchup.P1 != EMPTY && gameState.P3Round.Matchup.P2 != EMPTY)
-	if draftIsComplete {
+	if draftIsComplete(tournamentInfo, gameState) {
 		return computeWinRate(tournamentInfo, gameState), gameState
 	}
 
@@ -17,7 +15,7 @@ func TurinMinimax(tournamentInfo TournamentInfo, gameState GameState, isMaximizi
 		var bestGameState GameState
 		successors := getSuccessors(tournamentInfo, gameState)
 		for _, v := range successors {
-			// Make sure the false alternation works here
+			isMaximizingPlayer = false
 			value, candidateGameState := TurinMinimax(tournamentInfo, v, false, alpha, beta)
 
 			if value > bestVal {
@@ -36,8 +34,13 @@ func TurinMinimax(tournamentInfo TournamentInfo, gameState GameState, isMaximizi
 		var bestGameState GameState
 		successors := getSuccessors(tournamentInfo, gameState)
 		for _, v := range successors {
-			// Make sure the false alternation works here
-			value, candidateGameState := TurinMinimax(tournamentInfo, v, true, alpha, beta)
+			isMaximizingPlayer = true
+			if finalRoundIsNext(tournamentInfo, gameState) && whoWonTheLastRound(gameState) == P2 {
+				// If it's the round before last and P2 just won, p2 goes again.
+				// This only happens for p2 because 2nd to last round is always even.
+				isMaximizingPlayer = false
+			}
+			value, candidateGameState := TurinMinimax(tournamentInfo, v, isMaximizingPlayer, alpha, beta)
 
 			if value < bestVal {
 				bestGameState = candidateGameState
@@ -46,9 +49,26 @@ func TurinMinimax(tournamentInfo TournamentInfo, gameState GameState, isMaximizi
 			bestVal = math.Min(bestVal, value)
 			beta = math.Min(beta, bestVal)
 			if beta <= alpha {
+				if isMaximizingPlayer == false {
+					// Don't alpha/beta prune if we're taking two turns in a row because it's the second to last round.
+					continue
+				}
 				break
 			}
 		}
 		return bestVal, bestGameState
 	}
+}
+
+func draftIsComplete(tournamentInfo TournamentInfo, gameState GameState) bool {
+	return ((len(gameState.P2Rounds) + 1) == tournamentInfo.RoundCount) &&
+		(gameState.P3Round.Matchup.P1 != EMPTY && gameState.P3Round.Matchup.P2 != EMPTY)
+}
+
+func finalRoundIsNext(tournamentInfo TournamentInfo, gameState GameState) bool {
+	return len(gameState.P2Rounds) == tournamentInfo.RoundCount-1 && len(gameState.P3Round.Picks) == 0
+}
+
+func whoWonTheLastRound(gameState GameState) WhoWon {
+	return gameState.P2Rounds[len(gameState.P2Rounds)-1].WhoWon
 }
