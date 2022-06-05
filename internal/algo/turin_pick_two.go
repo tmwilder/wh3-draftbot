@@ -2,27 +2,26 @@ package algo
 
 import (
 	"fmt"
-	"github.com/tmwilder/wh3-draftbot/internal/common"
+	. "github.com/tmwilder/wh3-draftbot/internal/common"
 	"sort"
 )
 
 type P2Round struct {
-	Picks   []common.Faction
-	Matchup common.Matchup
+	Picks   []Faction
+	Matchup Matchup
 }
 
 type P3Round struct {
-	Picks      []common.Faction
-	Ban        common.Faction
-	CounterBan common.Faction
-	Matchup    common.Matchup
+	Picks      []Faction
+	Ban        Faction
+	CounterBan Faction
+	Matchup    Matchup
 }
 
 type GameState struct {
 	RoundNumber int
 	P2Rounds    []P2Round
 	P3Round     P3Round
-	RoundPhase  int
 }
 
 type resultAndOdds struct {
@@ -30,11 +29,11 @@ type resultAndOdds struct {
 	odds   float64
 }
 
-func getSuccessors(tournamentInfo common.TournamentInfo, previousGameState GameState) []GameState {
+func getSuccessors(tournamentInfo TournamentInfo, previousGameState GameState) []GameState {
 	if previousGameState.RoundNumber < tournamentInfo.RoundCount {
 		return getSuccessorsP2(previousGameState)
 	} else {
-		// TODO swap this to a pobabalistic handler in the recursive routine + by forking here by _both_ first and second pick and and assigning odds weighting in the caller
+		// TODO swap this to a probabilistic handler in the recursive routine + by forking here by _both_ first and second pick and and assigning odds weighting in the caller
 		return getSuccessorsP3(previousGameState, true)
 	}
 }
@@ -52,25 +51,20 @@ func getSuccessorsP2(previousGameState GameState) []GameState {
 	var successors []GameState
 
 	isP1Pick := previousGameState.RoundNumber%2 == 1
-	isInitialPicks := previousGameState.RoundPhase == 0
+	currentRound := previousGameState.P2Rounds[previousGameState.RoundNumber-1]
+	roundPhase := getP2RoundPhase(currentRound, isP1Pick)
 
-	if isInitialPicks {
+	switch roundPhase {
+	case 0:
 		pickCombos := getTwoCombos(previousGameState, isP1Pick)
 		for _, v := range pickCombos {
 			newGameState := deepcopy(previousGameState)
 			newGameState.P2Rounds = append(newGameState.P2Rounds, P2Round{})
 			newGameState.P2Rounds[previousGameState.RoundNumber-1].Picks = v
-			newGameState.RoundPhase = 1
 			successors = append(successors, newGameState)
 		}
 		return successors
-	}
-
-	currentRound := previousGameState.P2Rounds[previousGameState.RoundNumber-1]
-
-	var isCounterPick = previousGameState.RoundPhase == 1
-
-	if isCounterPick {
+	case 1:
 		remainingPicks := getRemainingPicks(previousGameState, !isP1Pick)
 		for _, v := range remainingPicks {
 			newGameState := deepcopy(previousGameState)
@@ -81,11 +75,10 @@ func getSuccessorsP2(previousGameState GameState) []GameState {
 				// Otherwise p1 is counterpicking
 				newGameState.P2Rounds[previousGameState.RoundNumber-1].Matchup.P1 = v
 			}
-			newGameState.RoundPhase = 2
 			successors = append(successors, newGameState)
 		}
 		return successors
-	} else {
+	case 2:
 		// We're on final pick if not the above two
 		for _, v := range currentRound.Picks {
 			newGameState := deepcopy(previousGameState)
@@ -95,10 +88,11 @@ func getSuccessorsP2(previousGameState GameState) []GameState {
 				newGameState.P2Rounds[previousGameState.RoundNumber-1].Matchup.P2 = v
 			}
 			newGameState.RoundNumber += 1
-			newGameState.RoundPhase = 0
 			successors = append(successors, newGameState)
 		}
 		return successors
+	default:
+		panic(fmt.Sprintf("Illegal round phase: %d", roundPhase))
 	}
 }
 
@@ -112,21 +106,22 @@ We also must figure out who is picking first, p1 or p2 from gamestate.
 We also need to determine what factions remain for each player in 1 or 3.
 */
 func getSuccessorsP3(previousGameState GameState, isP1Pick bool) []GameState {
-	isInitialPick := previousGameState.RoundPhase == 0
+	roundPhase := getP3RoundPhase(previousGameState.P3Round, isP1Pick)
 
 	var successors []GameState
 
-	if isInitialPick {
+	switch roundPhase {
+	case 0:
 		pickCombos := getThreeCombos(previousGameState, isP1Pick)
 		for _, initialPicks := range pickCombos {
 			newGameState := deepcopy(previousGameState)
 			newGameState.P3Round = P3Round{
-				Picks:      []common.Faction{},
-				Ban:        common.EMPTY,
-				CounterBan: common.EMPTY,
-				Matchup: common.Matchup{
-					P1: common.EMPTY,
-					P2: common.EMPTY,
+				Picks:      []Faction{},
+				Ban:        EMPTY,
+				CounterBan: EMPTY,
+				Matchup: Matchup{
+					P1: EMPTY,
+					P2: EMPTY,
 				}}
 			newGameState.P3Round.Picks = initialPicks
 
@@ -134,14 +129,11 @@ func getSuccessorsP3(previousGameState GameState, isP1Pick bool) []GameState {
 			for _, ban := range remainingBans {
 				newGameStateWithBan := deepcopy(newGameState)
 				newGameStateWithBan.P3Round.Ban = ban
-				newGameStateWithBan.RoundPhase = 1
 				successors = append(successors, newGameStateWithBan)
 			}
 		}
 		return successors
-	}
-	isCounterPick := previousGameState.RoundPhase == 1
-	if isCounterPick {
+	case 1:
 		counterBans := previousGameState.P3Round.Picks
 		for _, counterBan := range counterBans {
 			remainingPicks := getRemainingPicks(previousGameState, !isP1Pick)
@@ -157,12 +149,11 @@ func getSuccessorsP3(previousGameState GameState, isP1Pick bool) []GameState {
 				} else {
 					newGameStateWithBan.P3Round.Matchup.P1 = pick
 				}
-				newGameStateWithBan.RoundPhase = 2
 				successors = append(successors, newGameStateWithBan)
 			}
 		}
 		return successors
-	} else {
+	case 2:
 		// We're on final pick if not the above two
 		for _, v := range previousGameState.P3Round.Picks {
 			if v == previousGameState.P3Round.CounterBan {
@@ -174,16 +165,17 @@ func getSuccessorsP3(previousGameState GameState, isP1Pick bool) []GameState {
 			} else {
 				newGameState.P3Round.Matchup.P2 = v
 			}
-			newGameState.RoundPhase = 0
 			successors = append(successors, newGameState)
 		}
 		return successors
+	default:
+		panic(fmt.Sprintf("Illegal round phase: %d", roundPhase))
 	}
 }
 
-func getRemainingPicks(previousGameState GameState, isP1 bool) []common.Faction {
-	remainingFactions := map[common.Faction]bool{}
-	for k, v := range common.Factions {
+func getRemainingPicks(previousGameState GameState, isP1 bool) []Faction {
+	remainingFactions := map[Faction]bool{}
+	for k, v := range Factions {
 		remainingFactions[k] = v
 	}
 	for _, v := range previousGameState.P2Rounds {
@@ -193,7 +185,7 @@ func getRemainingPicks(previousGameState GameState, isP1 bool) []common.Faction 
 			delete(remainingFactions, v.Matchup.P2)
 		}
 	}
-	var remainingFactionsList []common.Faction
+	var remainingFactionsList []Faction
 
 	for k, _ := range remainingFactions {
 		remainingFactionsList = append(remainingFactionsList, k)
@@ -204,24 +196,24 @@ func getRemainingPicks(previousGameState GameState, isP1 bool) []common.Faction 
 	return remainingFactionsList
 }
 
-func getTwoCombos(state GameState, isP1Pick bool) [][]common.Faction {
+func getTwoCombos(state GameState, isP1Pick bool) [][]Faction {
 	remainingFactions := getRemainingPicks(state, isP1Pick)
-	var combos [][]common.Faction
+	var combos [][]Faction
 	for i, v := range remainingFactions {
 		for j := i + 1; j < len(remainingFactions); j++ {
-			combos = append(combos, []common.Faction{v, remainingFactions[j]})
+			combos = append(combos, []Faction{v, remainingFactions[j]})
 		}
 	}
 	return combos
 }
 
-func getThreeCombos(state GameState, isP1Pick bool) [][]common.Faction {
+func getThreeCombos(state GameState, isP1Pick bool) [][]Faction {
 	remainingFactions := getRemainingPicks(state, isP1Pick)
-	var combos [][]common.Faction
+	var combos [][]Faction
 	for i, v := range remainingFactions {
 		for j := i + 1; j < len(remainingFactions); j++ {
 			for k := j + 1; k < len(remainingFactions); k++ {
-				combos = append(combos, []common.Faction{v, remainingFactions[j], remainingFactions[k]})
+				combos = append(combos, []Faction{v, remainingFactions[j], remainingFactions[k]})
 			}
 		}
 	}
@@ -232,11 +224,11 @@ func deepcopy(state GameState) GameState {
 	p2Rounds := make([]P2Round, len(state.P2Rounds))
 	copy(p2Rounds, state.P2Rounds)
 
-	var p3RoundMatchup = common.Matchup{
+	var p3RoundMatchup = Matchup{
 		P1: state.P3Round.Matchup.P1,
 		P2: state.P3Round.Matchup.P2}
 
-	var p3RoundPicks []common.Faction
+	var p3RoundPicks []Faction
 	copy(state.P3Round.Picks, p3RoundPicks)
 
 	var p3RoundCopy = P3Round{
@@ -255,9 +247,9 @@ func deepcopy(state GameState) GameState {
 /**
 For one specific gamestate consisting of a full set of games, compute the odds of player one winning.
 */
-func computeWinRate(tournamentInfo common.TournamentInfo, gameState GameState) float64 {
+func computeWinRate(tournamentInfo TournamentInfo, gameState GameState) float64 {
 	// Validate input sanity
-	if gameState.P3Round.Matchup.P1 == common.EMPTY {
+	if gameState.P3Round.Matchup.P1 == EMPTY {
 		panic(fmt.Sprintf("Expected p3Round to be set but it was not"))
 	}
 	eventLength := len(gameState.P2Rounds) + 1
@@ -265,7 +257,7 @@ func computeWinRate(tournamentInfo common.TournamentInfo, gameState GameState) f
 		panic(fmt.Sprintf("Expected: %d rounds but got: %d rounds instead.", tournamentInfo.RoundCount, eventLength))
 	}
 
-	var matchups []common.Matchup
+	var matchups []Matchup
 	for _, v := range gameState.P2Rounds {
 		matchups = append(matchups, v.Matchup)
 	}
@@ -275,7 +267,7 @@ func computeWinRate(tournamentInfo common.TournamentInfo, gameState GameState) f
 	var results [][]resultAndOdds
 	var stack [][]resultAndOdds
 
-	r1Odds := common.GetMatchupValue(matchups[0], tournamentInfo)
+	r1Odds := GetMatchupValue(matchups[0], tournamentInfo)
 	stack = append(stack, []resultAndOdds{{true, r1Odds}})
 	stack = append(stack, []resultAndOdds{{false, 1.0 - r1Odds}})
 
@@ -286,7 +278,7 @@ func computeWinRate(tournamentInfo common.TournamentInfo, gameState GameState) f
 		if len(current) == len(matchups) {
 			results = append(results, current)
 		} else {
-			rNextOdds := common.GetMatchupValue(matchups[len(current)], tournamentInfo)
+			rNextOdds := GetMatchupValue(matchups[len(current)], tournamentInfo)
 			nextWin := make([]resultAndOdds, len(current))
 			nextLoss := make([]resultAndOdds, len(current))
 			copy(nextWin, current)
@@ -322,4 +314,80 @@ func computeWinRate(tournamentInfo common.TournamentInfo, gameState GameState) f
 		p1WinProbability += v
 	}
 	return p1WinProbability
+}
+
+/**
+From game state and tournament info, interprets what round number we are on, what phase of the round we are in, and
+whether it is P1s turn.
+
+Used to infer this info from rec requests so the client does not have explicitly input it.
+*/
+func InterpretRoundInfo(gameState GameState, tournamentInfo TournamentInfo) (int, int, bool) {
+	p2Rounds := gameState.P2Rounds
+	p3Round := gameState.P3Round
+	startedRound3 := len(p3Round.Picks) != 0
+	var gameRound int
+	var roundPhase int
+	var isP1Pick bool
+
+	if startedRound3 {
+		gameRound = tournamentInfo.RoundCount
+
+	} else {
+		gameRound = len(p2Rounds)
+		if gameRound == 0 {
+			gameRound = 1
+		} else {
+			currentRound := p2Rounds[len(p2Rounds)-1]
+			isP1Pick = gameRound%2 == 1
+			roundPhase = getP2RoundPhase(currentRound, isP1Pick)
+		}
+	}
+	return gameRound, roundPhase, isP1Pick
+}
+
+func getP3RoundPhase(currentRound P3Round, isP1Pick bool) int {
+	// TODO change when we go probabilistic on the r4-5 hop
+	// Assume p1 picks first r5 now
+	var roundPhase int
+	if isP1Pick {
+		if currentRound.Matchup.P1 != EMPTY {
+			roundPhase = 2
+		} else if currentRound.Matchup.P2 != EMPTY {
+			roundPhase = 1
+		} else {
+			roundPhase = 0
+		}
+	} else {
+		if currentRound.Matchup.P2 != EMPTY {
+			roundPhase = 2
+		} else if currentRound.Matchup.P1 != EMPTY {
+			roundPhase = 1
+		} else {
+			roundPhase = 0
+		}
+	}
+	return roundPhase
+}
+
+func getP2RoundPhase(currentRound P2Round, isP1Pick bool) int {
+	var roundPhase int
+	if isP1Pick {
+		if currentRound.Matchup.P1 != EMPTY {
+			roundPhase = 2
+		} else if currentRound.Matchup.P2 != EMPTY {
+			roundPhase = 1
+		} else {
+			roundPhase = 0
+		}
+	} else {
+		if currentRound.Matchup.P2 != EMPTY {
+			roundPhase = 2
+		} else if currentRound.Matchup.P1 != EMPTY {
+			roundPhase = 1
+		} else {
+			roundPhase = 0
+		}
+	}
+	return roundPhase
 }

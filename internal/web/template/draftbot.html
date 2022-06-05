@@ -113,14 +113,14 @@
                         <div class="col-12">
                             <button type="submit" formaction="/recommend" class="btn btn-primary" aria-describedby="recommendHelp">Get Recommendation</button>
                             <small class="form-text text-muted" id="recommendHelp">
-                                Generates a recommendation for the next move based on the current game state.
+                                Generates a recommendation for the next move and the rest of the game based on the current game state. The line has the bot run both sides and draft optimally.
                             </small>
                         </div>
                     </div>
                 </div>
                 <div class="form-row">
                     <h1> Recommendation </h1>
-                    {{.RecommendedGameState}}
+                    {{template "recommendation" .RecommendedGameState}}
                 </div>
             </form>
         </div>
@@ -132,3 +132,29 @@
 </body>
 
 </html>
+
+
+{{ define "recommendation" }}
+<div class="col-12">
+    {{ range $i, $gs := .P2Rounds }}
+        <div class="row">
+            <ul class="list-group list-group-horizontal-md">
+                <li class="list-group-item .flex-fill">Initial Picks: {{index .Picks 0}} {{index .Picks 1}}</li>
+                <li class="list-group-item .flex-fill">Player 2 Pick: {{.Matchup.P2}}</li>
+                <li class="list-group-item .flex-fill">Player 1 Pick: {{.Matchup.P1}}</li>
+                <h3>Round {{$i}}</h3>
+            </ul>
+        </div>
+    {{end}}
+    <div class="row">
+        <ul class="list-group list-group-horizontal-md">
+            <li class="list-group-item">Initial Picks: {{index .P3Round.Picks 0}} {{index .P3Round.Picks 1}} {{index .P3Round.Picks 2}}</li>
+            <li class="list-group-item">P1 Ban: {{.P3Round.Ban}}</li>
+            <li class="list-group-item">P2 Ban: {{.P3Round.CounterBan}}</li>
+            <li class="list-group-item">P2 Pick: {{.P3Round.Matchup.P2}}</li>
+            <li class="list-group-item">P1 Pick: {{.P3Round.Matchup.P1}}</li>
+            <h3>Final Round</h3>
+        </ul>
+    </div>
+</div>
+{{ end }}

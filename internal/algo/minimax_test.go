@@ -49,7 +49,6 @@ func TestMinimaxFullGame5(t *testing.T) {
 		RoundNumber: 1,
 		P2Rounds:    []P2Round{},
 		P3Round:     P3Round{},
-		RoundPhase:  0,
 	}
 
 	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
@@ -65,8 +64,7 @@ func TestMinimaxFullGame52ndPick(t *testing.T) {
 		P2Rounds: []P2Round{
 			{Picks: []Faction{NG, TZ}, Matchup: Matchup{P1: NG, P2: KI}},
 		},
-		P3Round:    P3Round{},
-		RoundPhase: 0,
+		P3Round: P3Round{},
 	}
 	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
 
@@ -82,8 +80,7 @@ func TestMinimaxFullGame3rdPick(t *testing.T) {
 			{Picks: []Faction{NG, TZ}, Matchup: Matchup{P1: NG, P2: KI}},
 			{Picks: []Faction{OK, KI}, Matchup: Matchup{P1: KH, P2: KI}},
 		},
-		P3Round:    P3Round{},
-		RoundPhase: 0,
+		P3Round: P3Round{},
 	}
 	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
 
@@ -97,7 +94,6 @@ func TestMinimaxFullGame3(t *testing.T) {
 		RoundNumber: 1,
 		P2Rounds:    []P2Round{},
 		P3Round:     P3Round{},
-		RoundPhase:  0,
 	}
 	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
 
@@ -113,8 +109,7 @@ func TestMinimaxR3(t *testing.T) {
 			{Picks: []Faction{SL, TZ}, Matchup: Matchup{P1: TZ, P2: GC}},
 			{Picks: []Faction{KH, TZ}, Matchup: Matchup{P1: OK, P2: KH}},
 		},
-		P3Round:    P3Round{},
-		RoundPhase: 0,
+		P3Round: P3Round{},
 	}
 
 	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
@@ -129,7 +124,6 @@ func TestMinimaxR3Polarized(t *testing.T) {
 		RoundNumber: 1,
 		P2Rounds:    []P2Round{},
 		P3Round:     P3Round{},
-		RoundPhase:  0,
 	}
 
 	value, gameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)

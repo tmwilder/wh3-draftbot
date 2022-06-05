@@ -19,7 +19,8 @@ type pageData struct {
 }
 
 func viewHandler(c *gin.Context) {
-	tournamentInfo, gameState := applyDefaults(parseInputs(c))
+	tournamentInfo, gameState, _ := parseInputs(c)
+	tournamentInfo, gameState = applyDefaults(tournamentInfo, gameState)
 	pageData := pageData{
 		TournamentInfo: tournamentInfo,
 		WinRate:        0.0,
@@ -29,7 +30,7 @@ func viewHandler(c *gin.Context) {
 }
 
 func recommendHandler(c *gin.Context) {
-	tournamentInfo, gameState := parseInputs(c)
+	tournamentInfo, gameState, _ := parseInputs(c)
 	winRate, recommendedGameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
 	paddedTournamentInfo, paddedGameState := applyDefaults(tournamentInfo, gameState)
 
@@ -44,7 +45,7 @@ func recommendHandler(c *gin.Context) {
 /**
 Nothing to see here.
 */
-func parseInputs(c *gin.Context) (TournamentInfo, GameState) {
+func parseInputs(c *gin.Context) (TournamentInfo, GameState, bool) {
 	queryParams := c.Request.URL.Query()
 	// Extract matchup odds
 	// We'll do it the gross way so we can remember life without tools ;)
@@ -103,65 +104,16 @@ func parseInputs(c *gin.Context) (TournamentInfo, GameState) {
 	p3Round.Matchup.P1 = Faction(c.Query("last-p1pick"))
 	p3Round.Matchup.P2 = Faction(c.Query("last-p2pick"))
 
-	// Need to interpret game round number, game round phase, who the maximizing player is next
-	startedRound3 := len(p3Round.Picks) != 0
-	var gameRound int
-	var roundPhase int
-
-	if startedRound3 {
-		gameRound = tournamentInfo.RoundCount
-		// TODO change when we go probabilistic on the r4-5 hop
-		// Assume p1 picks first r5 now
-		isP1Pick := true
-		if isP1Pick {
-			if p3Round.Matchup.P1 != EMPTY {
-				roundPhase = 2
-			} else if p3Round.Matchup.P2 != EMPTY {
-				roundPhase = 1
-			} else {
-				roundPhase = 0
-			}
-		} else {
-			if p3Round.Matchup.P2 != EMPTY {
-				roundPhase = 2
-			} else if p3Round.Matchup.P1 != EMPTY {
-				roundPhase = 1
-			} else {
-				roundPhase = 0
-			}
-		}
-	} else {
-		gameRound = len(p2Rounds)
-		currentRound := p2Rounds[len(p2Rounds)-1]
-		isP1Pick := gameRound%2 == 1
-		if isP1Pick {
-			if currentRound.Matchup.P1 != EMPTY {
-				roundPhase = 2
-			} else if currentRound.Matchup.P2 != EMPTY {
-				roundPhase = 1
-			} else {
-				roundPhase = 0
-			}
-		} else {
-			if currentRound.Matchup.P2 != EMPTY {
-				roundPhase = 2
-			} else if currentRound.Matchup.P1 != EMPTY {
-				roundPhase = 1
-			} else {
-				roundPhase = 0
-			}
-		}
-	}
-	// TODO need maximizing player read
-
 	gameState := GameState{
-		RoundNumber: gameRound,
-		P2Rounds:    p2Rounds,
-		P3Round:     p3Round,
-		RoundPhase:  roundPhase,
+		P2Rounds: p2Rounds,
+		P3Round:  p3Round,
 	}
 
-	return tournamentInfo, gameState
+	roundNumber, _, isP1Pick := InterpretRoundInfo(gameState, tournamentInfo)
+
+	gameState.RoundNumber = roundNumber
+
+	return tournamentInfo, gameState, isP1Pick
 }
 
 func parsePicks(factionStr string) []Faction {
