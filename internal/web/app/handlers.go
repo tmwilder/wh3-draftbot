@@ -20,7 +20,7 @@ type pageData struct {
 }
 
 func viewHandler(c *gin.Context) {
-	tournamentInfo, gameState := parseInputs(c)
+	tournamentInfo, gameState, _ := parseInputs(c)
 	tournamentInfo, gameState = applyDefaults(tournamentInfo, gameState)
 	pageData := pageData{
 		TournamentInfo: tournamentInfo,
@@ -32,8 +32,8 @@ func viewHandler(c *gin.Context) {
 }
 
 func recommendHandler(c *gin.Context) {
-	tournamentInfo, gameState := parseInputs(c)
-	winRate, recommendedGameState := TurinMinimax(tournamentInfo, gameState, true, -1.0, 2.0)
+	tournamentInfo, gameState, isP1PickNext := parseInputs(c)
+	winRate, recommendedGameState := TurinMinimax(tournamentInfo, gameState, isP1PickNext, -1.0, 2.0)
 	paddedTournamentInfo, paddedGameState := applyDefaults(tournamentInfo, gameState)
 
 	c.HTML(http.StatusOK, "draftbot.html", pageData{
@@ -48,7 +48,7 @@ func recommendHandler(c *gin.Context) {
 /**
 Nothing to see here.
 */
-func parseInputs(c *gin.Context) (TournamentInfo, GameState) {
+func parseInputs(c *gin.Context) (TournamentInfo, GameState, bool) {
 	queryParams := c.Request.URL.Query()
 	// Extract matchup odds
 	// We'll do it the gross way so we can remember life without tools ;)
@@ -118,7 +118,9 @@ func parseInputs(c *gin.Context) (TournamentInfo, GameState) {
 		P3Round:  p3Round,
 	}
 
-	return tournamentInfo, gameState
+	isP1PickNext := IsP1PickNext(tournamentInfo, gameState)
+
+	return tournamentInfo, gameState, isP1PickNext
 }
 
 func parsePicks(factionStr string) []Faction {

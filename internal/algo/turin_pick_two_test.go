@@ -342,3 +342,173 @@ func TestComputeWinrateRegression(t *testing.T) {
 		t.Errorf("Expected WR to be %f but it was %f", expected, result)
 	}
 }
+
+func TestIsP1PickNext(t *testing.T) {
+	// P2 cases - Special case - pre-draft 0 picks in
+	// Main cases (even picks in, odds picks in) 2, phase 3 = 6 cases
+	tournamentInfo := TournamentInfo{
+		RoundCount:  5,
+		MatchupOdds: MatchupsV1d2,
+	}
+
+	gameState := GameState{
+		P2Rounds: []P2Round{},
+		P3Round:  P3Round{},
+	}
+	isP1PickNext := IsP1PickNext(tournamentInfo, gameState)
+	expected := true
+	if isP1PickNext != expected {
+		t.Errorf("Expected %+v to result in is it p1 turn next?: %t", gameState, expected)
+	}
+
+	gameState = GameState{
+		P2Rounds: []P2Round{{Picks: []Faction{GC, GC}}},
+		P3Round:  P3Round{},
+	}
+	isP1PickNext = IsP1PickNext(tournamentInfo, gameState)
+	expected = false
+	if isP1PickNext != expected {
+		t.Errorf("Expected %+v to result in is it p1 turn next?: %t", gameState, expected)
+	}
+
+	gameState = GameState{
+		P2Rounds: []P2Round{{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: EMPTY, P2: GC}}},
+		P3Round:  P3Round{},
+	}
+	isP1PickNext = IsP1PickNext(tournamentInfo, gameState)
+	expected = true
+	if isP1PickNext != expected {
+		t.Errorf("Expected %+v to result in is it p1 turn next?: %t", gameState, expected)
+	}
+
+	gameState = GameState{
+		P2Rounds: []P2Round{
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}},
+		},
+		P3Round: P3Round{},
+	}
+	isP1PickNext = IsP1PickNext(tournamentInfo, gameState)
+	expected = true
+	if isP1PickNext != expected {
+		t.Errorf("Expected %+v to result in is it p1 turn next?: %t", gameState, expected)
+	}
+
+	gameState = GameState{
+		P2Rounds: []P2Round{
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: EMPTY}},
+		},
+		P3Round: P3Round{},
+	}
+	isP1PickNext = IsP1PickNext(tournamentInfo, gameState)
+	expected = false
+	if isP1PickNext != expected {
+		t.Errorf("Expected %+v to result in is it p1 turn next?: %t", gameState, expected)
+	}
+
+	gameState = GameState{
+		P2Rounds: []P2Round{
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+		},
+		P3Round: P3Round{},
+	}
+	isP1PickNext = IsP1PickNext(tournamentInfo, gameState)
+	expected = true
+	if isP1PickNext != expected {
+		t.Errorf("Expected %+v to result in is it p1 turn next?: %t", gameState, expected)
+	}
+
+	// P3 cases
+	// Dimensions (who is leading the round (2), what phase is it (3)) - 6 cases
+	gameState = GameState{
+		P2Rounds: []P2Round{
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}, WhoWon: P1},
+		},
+		P3Round: P3Round{},
+	}
+	isP1PickNext = IsP1PickNext(tournamentInfo, gameState)
+	expected = true
+	if isP1PickNext != expected {
+		t.Errorf("Expected %+v to result in is it p1 turn next?: %t", gameState, expected)
+	}
+
+	gameState = GameState{
+		P2Rounds: []P2Round{
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}, WhoWon: P2},
+		},
+		P3Round: P3Round{},
+	}
+	isP1PickNext = IsP1PickNext(tournamentInfo, gameState)
+	expected = false
+	if isP1PickNext != expected {
+		t.Errorf("Expected %+v to result in is it p1 turn next?: %t", gameState, expected)
+	}
+
+	gameState = GameState{
+		P2Rounds: []P2Round{
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}, WhoWon: P1},
+		},
+		P3Round: P3Round{Picks: []Faction{GC, GC, GC}, Ban: GC},
+	}
+	isP1PickNext = IsP1PickNext(tournamentInfo, gameState)
+	expected = false
+	if isP1PickNext != expected {
+		t.Errorf("Expected %+v to result in is it p1 turn next?: %t", gameState, expected)
+	}
+
+	gameState = GameState{
+		P2Rounds: []P2Round{
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}, WhoWon: P2},
+		},
+		P3Round: P3Round{Picks: []Faction{GC, GC, GC}, Ban: GC},
+	}
+	isP1PickNext = IsP1PickNext(tournamentInfo, gameState)
+	expected = true
+	if isP1PickNext != expected {
+		t.Errorf("Expected %+v to result in is it p1 turn next?: %t", gameState, expected)
+	}
+
+	gameState = GameState{
+		P2Rounds: []P2Round{
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}, WhoWon: P1},
+		},
+		P3Round: P3Round{Picks: []Faction{GC, GC, GC}, Ban: GC, CounterBan: GC, Matchup: Matchup{P2: GC, P1: EMPTY}},
+	}
+	isP1PickNext = IsP1PickNext(tournamentInfo, gameState)
+	expected = true
+	if isP1PickNext != expected {
+		t.Errorf("Expected %+v to result in is it p1 turn next?: %t", gameState, expected)
+	}
+
+	gameState = GameState{
+		P2Rounds: []P2Round{
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}},
+			{Picks: []Faction{GC, GC}, Matchup: Matchup{P1: GC, P2: GC}, WhoWon: P2},
+		},
+		P3Round: P3Round{Picks: []Faction{GC, GC, GC}, Ban: GC, CounterBan: GC, Matchup: Matchup{P2: EMPTY, P1: GC}},
+	}
+	isP1PickNext = IsP1PickNext(tournamentInfo, gameState)
+	expected = false
+	if isP1PickNext != expected {
+		t.Errorf("Expected %+v to result in is it p1 turn next?: %t", gameState, expected)
+	}
+}

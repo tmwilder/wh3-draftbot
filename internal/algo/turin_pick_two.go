@@ -326,32 +326,78 @@ func computeWinRate(tournamentInfo TournamentInfo, gameState GameState) float64 
 }
 
 /**
-From game state and tournament info, interprets what round number we are on, what phase of the round we are in, and
-whether it is P1s turn.
-
-Used to infer this info from rec requests so the client does not have explicitly input it.
+From game state and tournament info, interprets whether P1 is picking next or not.
 */
-func InterpretRoundInfo(gameState GameState, tournamentInfo TournamentInfo) (int, int, bool) {
+func IsP1PickNext(tournamentInfo TournamentInfo, gameState GameState) bool {
+	if len(gameState.P2Rounds) == 0 {
+		return true
+	}
 	p2Rounds := gameState.P2Rounds
-	p3Round := gameState.P3Round
-	startedRound3 := len(p3Round.Picks) != 0
-	var gameRound int
-	var roundPhase int
-	var isP1Pick bool
+
+	lastRound := p2Rounds[len(p2Rounds)-1]
+
+	p2RoundsFull := len(p2Rounds) == (tournamentInfo.RoundCount - 1)
+	lastP2RoundEnded := (lastRound.Matchup.P1 != EMPTY) && (lastRound.Matchup.P2 != EMPTY)
+	startedRound3 := p2RoundsFull && lastP2RoundEnded
 
 	if startedRound3 {
-		gameRound = tournamentInfo.RoundCount
-	} else {
-		gameRound = len(p2Rounds)
-		if gameRound == 0 {
-			gameRound = 1
+		isP2First := lastRound.WhoWon == P2
+		phase := getP3RoundPhase(gameState.P3Round, !isP2First)
+		if isP2First {
+			switch phase {
+			case 1:
+				return false
+			case 0:
+				return true
+			case -1:
+				return false
+			default:
+				panic(fmt.Sprintf("Illegal phase: %d", phase))
+			}
 		} else {
-			currentRound := p2Rounds[len(p2Rounds)-1]
-			isP1Pick = gameRound%2 == 1
-			roundPhase = getP2RoundPhase(currentRound, isP1Pick)
+			switch phase {
+			case 1:
+				return true
+			case 0:
+				return false
+			case -1:
+				return true
+			default:
+				panic(fmt.Sprintf("Illegal phase: %d", phase))
+			}
+		}
+	} else {
+		// P1 has odd rounds p2 has even rounds - determine if the current round was p1 or 2
+		isP1FirstRound := len(p2Rounds) == 0 || len(p2Rounds)%2 == 1
+		phase := getP2RoundPhase(p2Rounds[len(p2Rounds)-1], isP1FirstRound)
+		if isP1FirstRound {
+			switch phase {
+			case 1:
+				return true
+			case 0:
+				return false
+			case -1:
+				return true
+			case 2:
+				return false
+			default:
+				panic(fmt.Sprintf("Illegal phase: %d", phase))
+			}
+		} else {
+			switch phase {
+			case 1:
+				return false
+			case 0:
+				return true
+			case -1:
+				return false
+			case 2:
+				return true
+			default:
+				panic(fmt.Sprintf("Illegal phase: %d", phase))
+			}
 		}
 	}
-	return gameRound, roundPhase, isP1Pick
 }
 
 func getP3RoundPhase(currentRound P3Round, isP1Pick bool) int {
