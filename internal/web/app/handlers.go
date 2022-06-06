@@ -82,6 +82,7 @@ func parseInputs(c *gin.Context) (TournamentInfo, GameState, bool) {
 	picks := c.QueryArray("picks")
 	p1picks := c.QueryArray("p1pick")
 	p2picks := c.QueryArray("p2pick")
+	whowon := c.QueryArray("whowon")
 
 	// Populate the P2Round info
 	var p2Rounds []P2Round
@@ -100,7 +101,12 @@ func parseInputs(c *gin.Context) (TournamentInfo, GameState, bool) {
 		if len(p2picks) >= i {
 			matchup.P2 = Faction(p2picks[i])
 		}
-		round := P2Round{Picks: roundPicks, Matchup: matchup}
+
+		var whoWonThisRound WhoWon
+		if len(whowon) >= i {
+			whoWonThisRound = WhoWon(whowon[i])
+		}
+		round := P2Round{Picks: roundPicks, Matchup: matchup, WhoWon: whoWonThisRound}
 		p2Rounds = append(p2Rounds, round)
 	}
 

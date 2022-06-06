@@ -73,10 +73,24 @@
                                     </small>
                                 </div>
                                 <div class="col form-group">
-                                    <select class="form-select" aria-label="Who won the round?" id="round-{{$i}}-whowon" name="whowon" type="text" value="{{.WhoWon}}" aria-describedby="whowonhelp">
-                                        <option value="NoOneYet" selected>No One Yet</option>
-                                        <option value="P1">P1</option>
-                                        <option value="P2">P2</option>
+                                    <select class="form-select" aria-label="Who won the round?" id="round-{{$i}}-whowon" name="whowon" value="{{.WhoWon}}" aria-describedby="whowonhelp">
+                                        {{ if eq .WhoWon "" }}
+                                            <option value="" selected>No One Yet</option>
+                                        {{ else }}
+                                            <option value="">No One Yet</option>
+                                        {{ end }}
+
+                                        {{ if eq .WhoWon "P1" }}
+                                            <option value="P1" selected>P1</option>
+                                        {{ else }}
+                                            <option value="P1">P1</option>
+                                        {{ end }}
+
+                                        {{ if eq .WhoWon "P2" }}
+                                            <option value="P2" selected>P2</option>
+                                        {{ else }}
+                                            <option value="P2">P2</option>
+                                        {{ end }}
                                     </select>
                                     <small class="form-text text-muted" id="whowonhelp">
                                         Who won the round?
